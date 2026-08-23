@@ -87,11 +87,13 @@ export const SongInfo = (props) => {
 
   const roles = []
 
-  for (const name of Object.keys(record.participants)) {
-    if (name === 'albumartist' || name === 'artist') {
-      continue
+  if (record.participants) {
+    for (const name of Object.keys(record.participants)) {
+      if (name === 'albumartist' || name === 'artist') {
+        continue
+      }
+      roles.push([name, record.participants[name].length])
     }
-    roles.push([name, record.participants[name].length])
   }
 
   const optionalFields = [
