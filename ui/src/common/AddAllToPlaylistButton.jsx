@@ -15,7 +15,7 @@ export const AddAllToPlaylistButton = ({ filters }) => {
   const handleOnClick = () => {
     dataProvider
       .getList('song', {
-        pagination: { page: 1, perPage: -1 },
+        pagination: { page: 1, perPage: 0 },
         sort: { field: 'title', order: 'ASC' },
         filter: filters,
       })
