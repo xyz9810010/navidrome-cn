@@ -155,11 +155,13 @@
         "currentPassword": "当前密码",
         "newPassword": "新密码",
         "token": "令牌",
-        "libraries": "媒体库"
+        "libraries": "媒体库",
+        "scrobbleFilter": "Scrobble 过滤"
       },
       "helperTexts": {
         "name": "名称的更改将在下次登录时生效",
-        "libraries": "为此用户选择指定媒体库，留空则使用默认媒体库"
+        "libraries": "为此用户选择指定媒体库，留空则使用默认媒体库",
+        "scrobbleFilter": "符合这些智能歌单规则的歌曲将不会被发送到 Last.fm、ListenBrainz 或 Scrobble 插件。使用与智能歌单相同的 JSON 语法和行为。示例：{\"all\":[{\"lt\":{\"rating\":4}}]}。留空则记录所有播放。本地的播放次数不受影响。"
       },
       "notifications": {
         "created": "用户已创建",
@@ -167,7 +169,8 @@
         "deleted": "用户已删除"
       },
       "validation": {
-        "librariesRequired": "至少为非管理员用户选择一个媒体库"
+        "librariesRequired": "至少为非管理员用户选择一个媒体库",
+        "invalidScrobbleFilter": "必须是有效的智能歌单规则。不支持 limit、offset 和刷新延迟。"
       },
       "message": {
         "listenBrainzToken": "输入您的 ListenBrainz 用户令牌",
@@ -195,7 +198,8 @@
         "name": "名称",
         "targetFormat": "目标格式",
         "defaultBitRate": "默认比特率",
-        "command": "命令"
+        "command": "命令",
+        "format": "格式"
       }
     },
     "playlist": {
@@ -474,7 +478,12 @@
       "unselect": "取消选择",
       "skip": "跳过",
       "share": "分享",
-      "download": "下载"
+      "download": "下载",
+      "selectNone": "-- 无 --",
+      "selectAll": "-- 全部 --",
+      "love": "收藏",
+      "more": "更多",
+      "play": "播放"
     },
     "boolean": {
       "true": "是",
@@ -567,6 +576,16 @@
     "coverUploadError": "上传封面时出错",
     "coverRemoveError": "移除封面时出错",
     "note": "注意",
+    "errorPrefix": "错误",
+    "originalFormat": "原始",
+    "none": "无",
+    "notAvailable": "不适用",
+    "noLibrariesAvailable": "暂无可用媒体库",
+    "deleteMissingFilesError": "删除丢失文件时出错",
+    "artistContextMenu": "艺人菜单",
+    "albumDetails": "专辑详情",
+    "songDetails": "歌曲详情",
+    "songRawTags": "歌曲原始标签",
     "transcodingDisabled": "出于安全原因，从 Web 界面更改转码配置的功能已被禁用。要更改（编辑或新增）转码选项，请在启用 %{config} 选项的情况下重新启动服务器。",
     "transcodingEnabled": "Navidrome 当前与 %{config} 一起使用，可以通过从 Web 界面配置转码选项来执行任意命令。建议禁用此选项，并且仅在需要配置转码选项时启用此功能。",
     "songsAddedToPlaylist": "已添加 %{smart_count} 首歌到歌单",
@@ -617,6 +636,9 @@
     "theme": "主题",
     "personal": {
       "name": "个性化",
+      "themeAuto": "自动",
+      "createYourOwnTheme": "创建你自己的主题",
+      "helpToTranslate": "帮助翻译",
       "options": {
         "theme": "主题",
         "language": "语言",
@@ -666,9 +688,14 @@
     }
   },
   "about": {
+    "title": "Navidrome 音乐服务器",
     "links": {
       "homepage": "主页",
+      "reddit": "Reddit",
+      "twitter": "Twitter",
+      "discord": "Discord",
       "source": "源代码",
+      "bugReports": "问题反馈",
       "featureRequests": "功能需求",
       "lastInsightsCollection": "上次的匿名数据收集",
       "insights": {
@@ -723,5 +750,12 @@
       "vol_down": "减小音量",
       "toggle_love": "添加/移除收藏"
     }
+  },
+  "themes": {
+    "LightTheme": "浅色",
+    "DarkTheme": "深色",
+    "ExtraDarkTheme": "极深色",
+    "GreenTheme": "绿色",
+    "ElectricPurpleTheme": "电光紫"
   }
 }

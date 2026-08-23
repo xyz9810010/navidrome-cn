@@ -198,7 +198,8 @@
         "name": "Name",
         "targetFormat": "Target Format",
         "defaultBitRate": "Default Bit Rate",
-        "command": "Command"
+        "command": "Command",
+        "format": "Format"
       }
     },
     "playlist": {
@@ -477,7 +478,12 @@
       "unselect": "Unselect",
       "skip": "Skip",
       "share": "Share",
-      "download": "Download"
+      "download": "Download",
+      "selectNone": "-- None --",
+      "selectAll": "-- All --",
+      "love": "Love",
+      "more": "More",
+      "play": "Play"
     },
     "boolean": {
       "true": "Yes",
@@ -570,6 +576,16 @@
     "coverUploadError": "Error uploading cover art",
     "coverRemoveError": "Error removing cover art",
     "note": "NOTE",
+    "errorPrefix": "Error",
+    "originalFormat": "Original",
+    "none": "None",
+    "notAvailable": "N/A",
+    "noLibrariesAvailable": "No libraries available",
+    "deleteMissingFilesError": "Error deleting missing files",
+    "artistContextMenu": "Artist context menu",
+    "albumDetails": "Album details",
+    "songDetails": "Song details",
+    "songRawTags": "Song raw tags",
     "transcodingDisabled": "Changing the transcoding configuration through the web interface is disabled for security reasons. If you would like to change (edit or add) transcoding options, restart the server with the %{config} configuration option.",
     "transcodingEnabled": "Navidrome is currently running with %{config}, making it possible to run system commands from the transcoding settings using the web interface. We recommend to disable it for security reasons and only enable it when configuring Transcoding options.",
     "songsAddedToPlaylist": "Added 1 song to playlist |||| Added %{smart_count} songs to playlist",
@@ -620,6 +636,9 @@
     "theme": "Theme",
     "personal": {
       "name": "Personal",
+      "themeAuto": "Auto",
+      "createYourOwnTheme": "Create your own theme",
+      "helpToTranslate": "Help to translate",
       "options": {
         "theme": "Theme",
         "language": "Language",
@@ -669,9 +688,14 @@
     }
   },
   "about": {
+    "title": "Navidrome Music Server",
     "links": {
       "homepage": "Home page",
+      "reddit": "Reddit",
+      "twitter": "Twitter",
+      "discord": "Discord",
       "source": "Source code",
+      "bugReports": "Bug Reports",
       "featureRequests": "Feature requests",
       "lastInsightsCollection": "Last insights collection",
       "insights": {
@@ -726,5 +750,12 @@
       "vol_down": "Volume Down",
       "toggle_love": "Add this track to favourites"
     }
+  },
+  "themes": {
+    "LightTheme": "Light",
+    "DarkTheme": "Dark",
+    "ExtraDarkTheme": "Extra Dark",
+    "GreenTheme": "Green",
+    "ElectricPurpleTheme": "Electric Purple"
   }
 }

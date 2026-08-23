@@ -1,10 +1,11 @@
 import React from 'react'
-import { Datagrid, TextField } from 'react-admin'
+import { Datagrid, TextField, useTranslate } from 'react-admin'
 import { useMediaQuery } from '@material-ui/core'
 import { SimpleList, List } from '../common'
 import config from '../config'
 
 const TranscodingList = (props) => {
+  const translate = useTranslate()
   const isXsmall = useMediaQuery((theme) => theme.breakpoints.down('xs'))
   return (
     <List
@@ -15,7 +16,9 @@ const TranscodingList = (props) => {
       {isXsmall ? (
         <SimpleList
           primaryText={(r) => r.name}
-          secondaryText={(r) => `format: ${r.targetFormat}`}
+          secondaryText={(r) =>
+            `${translate('resources.transcoding.fields.format')}: ${r.targetFormat}`
+          }
           tertiaryText={(r) => r.defaultBitRate}
         />
       ) : (

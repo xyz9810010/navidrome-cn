@@ -17,9 +17,13 @@ import { sharePlayerUrl } from '../utils'
 import config from '../config'
 
 export const FormatInfo = ({ record, size }) => {
+  const translate = useTranslate()
   const r = { suffix: record.format, bitRate: record.maxBitRate }
   r.suffix =
-    r.suffix || (r.bitRate ? config.defaultDownsamplingFormat : 'Original')
+    r.suffix ||
+    (r.bitRate
+      ? config.defaultDownsamplingFormat
+      : translate('message.originalFormat'))
   return <QualityInfo record={r} size={size} />
 }
 

@@ -143,7 +143,7 @@ export const SongInfo = (props) => {
         id="mapped-tags-body"
         aria-labelledby={record.rawTags ? 'mapped-tags-tab' : undefined}
       >
-        <Table aria-label="song details" size="small">
+        <Table aria-label={translate('message.songDetails')} size="small">
           <TableBody>
             {Object.keys(data).map((key) => {
               return (
@@ -191,7 +191,7 @@ export const SongInfo = (props) => {
           id="raw-tags-body"
           aria-labelledby="raw-tags-tab"
         >
-          <Table size="small" aria-label="song raw tags">
+          <Table size="small" aria-label={translate('message.songRawTags')}>
             <TableBody>
               <TableRow key={`${record.id}-raw-path`}>
                 <TableCell scope="row" className={classes.tableCell}>

@@ -117,7 +117,7 @@ const AlbumInfo = (props) => {
 
   return (
     <TableContainer>
-      <Table aria-label="album details" size="small">
+      <Table aria-label={translate('message.albumDetails')} size="small">
         <TableBody>
           {Object.keys(data).map((key) => {
             return (

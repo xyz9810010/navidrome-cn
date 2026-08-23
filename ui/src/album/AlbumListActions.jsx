@@ -40,7 +40,7 @@ const AlbumViewToggler = React.forwardRef(
         <ButtonGroup
           variant="text"
           color="primary"
-          aria-label="text primary button group"
+          aria-label={translate('ra.toggleFieldsMenu.layout')}
           className={classes.buttonGroup}
         >
           <Button

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslate } from 'react-admin'
 import { Typography, Collapse } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import Card from '@material-ui/core/Card'
@@ -85,6 +86,7 @@ const MobileArtistDetails = ({ biography, record }) => {
   const [expanded, setExpanded] = useState(false)
   const classes = useStyles({ img, expanded })
   const title = record.name
+  const translate = useTranslate()
   const [isLightboxOpen, setLightboxOpen] = useState(false)
 
   return (
@@ -116,7 +118,7 @@ const MobileArtistDetails = ({ biography, record }) => {
                 record={record}
                 resource={'artist'}
                 size={'small'}
-                aria-label="love"
+                aria-label={translate('ra.action.love')}
                 color="primary"
               />
             </Typography>

@@ -138,7 +138,7 @@ const PlaylistDetails = (props) => {
                 record={record}
                 resource={'playlist'}
                 size={isDesktop ? 'default' : 'small'}
-                aria-label="love"
+                aria-label={translate('ra.action.love')}
                 color="primary"
               />
             </div>

@@ -4,10 +4,10 @@ import Chip from '@material-ui/core/Chip'
 import config from '../config'
 import { makeStyles } from '@material-ui/core'
 import clsx from 'clsx'
+import { useTranslate } from 'react-admin'
 import { calculateGain } from '../utils/calculateReplayGain'
 
 const llFormats = new Set(config.losslessFormats.split(','))
-const placeholder = 'N/A'
 
 const useStyle = makeStyles(
   (theme) => ({
@@ -30,6 +30,8 @@ export const QualityInfo = ({
   isDirectPlay,
 }) => {
   const classes = useStyle()
+  const translate = useTranslate()
+  const placeholder = translate('message.notAvailable')
   let { suffix, bitRate, rgAlbumGain, rgAlbumPeak, rgTrackGain, rgTrackPeak } =
     record
   let info = placeholder

@@ -42,7 +42,7 @@ const MissingFilesFilter = (props) => {
         filterToQuery={(searchText) => ({ name: [searchText] })}
         alwaysOn
       >
-        <SelectInput emptyText="-- All --" optionText="name" />
+        <SelectInput emptyText={translate('ra.action.selectAll')} optionText="name" />
       </ReferenceInput>
     </Filter>
   )

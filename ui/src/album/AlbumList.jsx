@@ -56,9 +56,6 @@ const useStyles = makeStyles({
   },
 })
 
-const formatReleaseType = (record) =>
-  record?.tagValue ? humanize(record?.tagValue) : '-- None --'
-
 const AlbumFilter = (props) => {
   const classes = useStyles()
   const translate = useTranslate()
@@ -74,7 +71,7 @@ const AlbumFilter = (props) => {
         sort={{ field: 'name', order: 'ASC' }}
         filterToQuery={(searchText) => ({ name: [searchText] })}
       >
-        <AutocompleteInput emptyText="-- None --" />
+        <AutocompleteInput emptyText={translate('ra.action.selectNone')} />
       </ReferenceInput>
       <ReferenceArrayInput
         label={translate('resources.album.fields.genre')}
@@ -84,7 +81,7 @@ const AlbumFilter = (props) => {
         sort={{ field: 'name', order: 'ASC' }}
         filterToQuery={(searchText) => ({ name: [searchText] })}
       >
-        <AutocompleteArrayInput emptyText="-- None --" classes={classes} />
+        <AutocompleteArrayInput emptyText={translate('ra.action.selectNone')} classes={classes} />
       </ReferenceArrayInput>
       <ReferenceInput
         label={translate('resources.album.fields.recordLabel')}
@@ -97,7 +94,7 @@ const AlbumFilter = (props) => {
           tag_value: [searchText],
         })}
       >
-        <AutocompleteInput emptyText="-- None --" optionText="tagValue" />
+        <AutocompleteInput emptyText={translate('ra.action.selectNone')} optionText="tagValue" />
       </ReferenceInput>
       <ReferenceArrayInput
         label={translate('resources.album.fields.grouping')}
@@ -111,7 +108,7 @@ const AlbumFilter = (props) => {
         })}
       >
         <AutocompleteArrayInput
-          emptyText="-- None --"
+          emptyText={translate('ra.action.selectNone')}
           classes={classes}
           optionText="tagValue"
         />
@@ -128,7 +125,7 @@ const AlbumFilter = (props) => {
         })}
       >
         <AutocompleteArrayInput
-          emptyText="-- None --"
+          emptyText={translate('ra.action.selectNone')}
           classes={classes}
           optionText="tagValue"
         />
@@ -144,7 +141,7 @@ const AlbumFilter = (props) => {
           tag_value: [searchText],
         })}
       >
-        <AutocompleteInput emptyText="-- None --" optionText="tagValue" />
+        <AutocompleteInput emptyText={translate('ra.action.selectNone')} optionText="tagValue" />
       </ReferenceInput>
       <ReferenceInput
         label={translate('resources.album.fields.releaseType')}
@@ -158,8 +155,12 @@ const AlbumFilter = (props) => {
         })}
       >
         <AutocompleteInput
-          emptyText="-- None --"
-          optionText={formatReleaseType}
+          emptyText={translate('ra.action.selectNone')}
+          optionText={(record) =>
+            record?.tagValue
+              ? humanize(record?.tagValue)
+              : translate('ra.action.selectNone')
+          }
         />
       </ReferenceInput>
       <NullableBooleanInput source="compilation" />

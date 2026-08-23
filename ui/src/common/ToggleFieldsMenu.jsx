@@ -65,7 +65,7 @@ export const ToggleFieldsMenu = ({
   return (
     <div className={classes.menuIcon}>
       <IconButton
-        aria-label="more"
+        aria-label={translate('ra.action.more')}
         aria-controls="long-menu"
         aria-haspopup="true"
         onClick={handleOpen}

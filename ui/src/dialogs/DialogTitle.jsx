@@ -4,6 +4,7 @@ import Typography from '@material-ui/core/Typography'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 import React from 'react'
+import { useTranslate } from 'react-admin'
 
 const styles = (theme) => ({
   root: {
@@ -20,11 +21,12 @@ const styles = (theme) => ({
 
 export const DialogTitle = withStyles(styles)((props) => {
   const { children, classes, onClose, ...other } = props
+  const translate = useTranslate()
   return (
     <MuiDialogTitle disableTypography className={classes.root} {...other}>
       <Typography variant="h5">{children}</Typography>
       <IconButton
-        aria-label="close"
+        aria-label={translate('ra.action.close')}
         className={classes.closeButton}
         onClick={onClose}
       >

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import PlayArrowIcon from '@material-ui/icons/PlayArrow'
 import { IconButton } from '@material-ui/core'
 import { useDispatch } from 'react-redux'
-import { useDataProvider } from 'react-admin'
+import { useDataProvider, useTranslate } from 'react-admin'
 import { playTracks } from '../actions'
 
 export const PlayButton = ({ record, size, className }) => {
@@ -17,6 +17,7 @@ export const PlayButton = ({ record, size, className }) => {
   }
   const dataProvider = useDataProvider()
   const dispatch = useDispatch()
+  const translate = useTranslate()
   const playAlbum = (record) => {
     dataProvider
       .getList('song', {
@@ -40,7 +41,7 @@ export const PlayButton = ({ record, size, className }) => {
         e.preventDefault()
         playAlbum(record)
       }}
-      aria-label="play"
+      aria-label={translate('ra.action.play')}
       className={className}
       size={size}
     >

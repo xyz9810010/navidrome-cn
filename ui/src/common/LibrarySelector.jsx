@@ -153,7 +153,7 @@ const LibrarySelector = () => {
   const isIndeterminate = selectedCount > 0 && selectedCount < totalCount
 
   const displayText = isNoneSelected
-    ? translate('menu.librarySelector.none') + ` (0 of ${totalCount})`
+    ? translate('menu.librarySelector.none') + ` (0 / ${totalCount})`
     : isAllSelected
       ? translate('menu.librarySelector.allLibraries', { count: totalCount })
       : translate('menu.librarySelector.multipleLibraries', {

@@ -50,10 +50,13 @@ const useStyles = makeStyles((theme) => ({
 
 const EmptyLibraryMessage = () => {
   const classes = useStyles()
+  const translate = useTranslate()
 
   return (
     <div className={classes.emptyMessage}>
-      <Typography variant="body2">No libraries available</Typography>
+      <Typography variant="body2">
+        {translate('message.noLibrariesAvailable')}
+      </Typography>
     </div>
   )
 }

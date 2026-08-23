@@ -9,6 +9,7 @@ import {
   useDeleteMany,
   useRefresh,
   useUnselectAll,
+  useTranslate,
 } from 'react-admin'
 
 const useStyles = makeStyles(
@@ -33,6 +34,7 @@ const DeleteMissingFilesButton = (props) => {
   const unselectAll = useUnselectAll()
   const refresh = useRefresh()
   const notify = useNotify()
+  const translate = useTranslate()
 
   const ids = deleteAll ? [] : selectedIds
   const [deleteMany, { loading }] = useDeleteMany('missing', ids, {
@@ -42,7 +44,7 @@ const DeleteMissingFilesButton = (props) => {
       unselectAll('missing')
     },
     onFailure: (error) =>
-      notify('Error: missing files not deleted', { type: 'warning' }),
+      notify(translate('message.deleteMissingFilesError'), { type: 'warning' }),
   })
   const handleClick = () => setOpen(true)
   const handleDialogClose = () => setOpen(false)

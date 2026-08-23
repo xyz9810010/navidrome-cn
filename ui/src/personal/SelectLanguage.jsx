@@ -13,7 +13,7 @@ export const SelectLanguage = (props) => {
 
   choices.push({
     id: helpKey,
-    name: <HelpMsg caption={'Help to translate'} />,
+    name: <HelpMsg caption={translate('menu.personal.helpToTranslate')} />,
   })
 
   return (

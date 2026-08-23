@@ -1,0 +1,23 @@
+# Navidrome-cn（100% 简体中文版）— 飞牛 fnOS Docker 部署配置
+# 使用方法见同目录下的《部署到飞牛.md》
+services:
+  navidrome:
+    image: navidrome-cn:latest          # 自定义中文版镜像；改为你实际构建/推送的镜像名
+    container_name: navidrome-cn
+    restart: unless-stopped
+    ports:
+      - "4533:4533"                     # 访问地址 http://飞牛IP:4533
+    environment:
+      - ND_SCANSCHEDULER=1h             # 每小时自动扫描一次音乐库
+      - ND_LOGLEVEL=info
+      - ND_SESSIONTIMEOUT=24h           # 登录保持 24 小时
+      - ND_BASEURL=
+      - ND_DEFAULTLANGUAGE=zh-Hans      # 默认使用简体中文
+      - ND_DEFAULTTHEME=Dark
+      - ND_ENABLEFAVOURITES=true
+      - ND_ENABLESTARRATING=true
+      - ND_ENABLESHARING=true
+    volumes:
+      # 下面两行路径必须改成你在飞牛里的真实绝对路径
+      - /vol1/1000/docker/navidrome/data:/data    # 数据目录（数据库/缓存/封面等）
+      - /vol1/1000/music:/music:ro                 # 音乐目录（只读挂载）

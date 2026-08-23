@@ -149,7 +149,7 @@ const AboutTabContent = ({
   const translate = useTranslate()
 
   const lastRun = !loading && insightsData?.lastRun
-  let insightsStatus = 'N/A'
+  let insightsStatus = translate('message.notAvailable')
   if (lastRun === 'disabled') {
     insightsStatus = translate('about.links.insights.disabled')
   } else if (lastRun && lastRun?.startsWith('1969-12-31')) {
@@ -433,6 +433,7 @@ const TabContent = ({
 
 const AboutDialog = ({ open, onClose }) => {
   const classes = useStyles()
+  const translate = useTranslate()
   const { permissions } = usePermissions()
   const { data: insightsData, loading } = useGetOne(
     'insights',
@@ -472,7 +473,7 @@ const AboutDialog = ({ open, onClose }) => {
       className={classes.expandableDialog}
     >
       <DialogTitle id="about-dialog-title" onClose={onClose}>
-        Navidrome Music Server
+        {translate('about.title')}
       </DialogTitle>
       <DialogContent dividers>
         <TabContent

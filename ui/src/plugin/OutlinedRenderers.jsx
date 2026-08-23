@@ -27,6 +27,7 @@ import {
   MenuItem,
 } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
+import { useTranslate } from 'react-admin'
 import merge from 'lodash/merge'
 
 const useStyles = makeStyles(
@@ -178,6 +179,7 @@ const OutlinedNumberControl = (props) => {
 // Enum/Select control wrapper
 const OutlinedEnumControl = (props) => {
   const classes = useStyles()
+  const translate = useTranslate()
   const {
     data,
     id,
@@ -229,7 +231,7 @@ const OutlinedEnumControl = (props) => {
       >
         {!required && (
           <MenuItem value="">
-            <em>None</em>
+            <em>{translate('message.none')}</em>
           </MenuItem>
         )}
         {options?.map((option) => (

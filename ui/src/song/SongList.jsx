@@ -83,7 +83,7 @@ const SongFilter = (props) => {
         sort={{ field: 'name', order: 'ASC' }}
         filterToQuery={(searchText) => ({ name: [searchText] })}
       >
-        <AutocompleteArrayInput emptyText="-- None --" classes={classes} />
+        <AutocompleteArrayInput emptyText={translate('ra.action.selectNone')} classes={classes} />
       </ReferenceArrayInput>
       <ReferenceArrayInput
         label={translate('resources.song.fields.grouping')}
@@ -97,7 +97,7 @@ const SongFilter = (props) => {
         })}
       >
         <AutocompleteArrayInput
-          emptyText="-- None --"
+          emptyText={translate('ra.action.selectNone')}
           classes={classes}
           optionText="tagValue"
         />
@@ -114,7 +114,7 @@ const SongFilter = (props) => {
         })}
       >
         <AutocompleteArrayInput
-          emptyText="-- None --"
+          emptyText={translate('ra.action.selectNone')}
           classes={classes}
           optionText="tagValue"
         />

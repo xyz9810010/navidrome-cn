@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslate } from 'react-admin'
 import { Typography, Collapse } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core'
 import Card from '@material-ui/core/Card'
@@ -83,6 +84,7 @@ const DesktopArtistDetails = ({ artistInfo, record, biography }) => {
   const [expanded, setExpanded] = useState(false)
   const classes = useStyles()
   const title = record.name
+  const translate = useTranslate()
   const [isLightboxOpen, setLightboxOpen] = useState(false)
 
   return (
@@ -114,7 +116,7 @@ const DesktopArtistDetails = ({ artistInfo, record, biography }) => {
                 record={record}
                 resource={'artist'}
                 size={'default'}
-                aria-label="artist context menu"
+                aria-label={translate('message.artistContextMenu')}
                 color="primary"
               />
             </Typography>

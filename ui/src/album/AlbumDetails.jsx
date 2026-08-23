@@ -268,7 +268,7 @@ const AlbumDetails = (props) => {
                 record={record}
                 resource={'album'}
                 size={isDesktop ? 'default' : 'small'}
-                aria-label="love"
+                aria-label={translate('ra.action.love')}
                 color="primary"
               />
             </Typography>
