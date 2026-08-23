@@ -10,7 +10,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import AlbumSongs from './AlbumSongs'
 import AlbumDetails from './AlbumDetails'
 import AlbumActions from './AlbumActions'
-import { useResourceRefresh, useScrollRestoration, Title } from '../common'
+import { BackButton, useResourceRefresh, useScrollRestoration, Title } from '../common'
 
 const useStyles = makeStyles(
   (theme) => ({
@@ -33,6 +33,7 @@ const AlbumShowLayout = (props) => {
   return (
     <>
       {record && <RaTitle title={<Title subTitle={record.name} />} />}
+      {record && <BackButton fallback="/album" />}
       {record && <AlbumDetails {...context} />}
       {record && (
         <ReferenceManyField

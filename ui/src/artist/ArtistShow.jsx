@@ -14,6 +14,7 @@ import AlbumGridView from '../album/AlbumGridView'
 import MobileArtistDetails from './MobileArtistDetails'
 import DesktopArtistDetails from './DesktopArtistDetails'
 import {
+  BackButton,
   useAlbumsPerPage,
   useResourceRefresh,
   useScrollRestoration,
@@ -113,6 +114,7 @@ const ArtistShowLayout = (props) => {
   return (
     <>
       {record && <RaTitle title={<Title subTitle={record.name} />} />}
+      {record && <BackButton fallback="/artist" />}
       {record && <ArtistDetails />}
       {record && (
         <div className={classes.actionsContainer}>

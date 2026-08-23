@@ -11,6 +11,7 @@ import PlaylistDetails from './PlaylistDetails'
 import PlaylistSongs from './PlaylistSongs'
 import PlaylistActions from './PlaylistActions'
 import {
+  BackButton,
   Pagination,
   Title,
   canChangeTracks,
@@ -40,6 +41,7 @@ const PlaylistShowLayout = (props) => {
   return (
     <>
       {record && <RaTitle title={<Title subTitle={record.name} />} />}
+      {record && <BackButton fallback="/playlist" />}
       {record && <PlaylistDetails {...context} />}
       {record && (
         <ReferenceManyField
