@@ -1,10 +1,10 @@
-# Wikimedia Plugin for Navidrome
+# Navidrome 的 Wikimedia 插件
 
-A Navidrome plugin that fetches artist metadata from Wikidata, DBpedia, and Wikipedia.
+一个从 Wikidata、DBpedia 和 Wikipedia 获取艺人元数据的 Navidrome 插件。
 
-## Generating the Plugin
+## 生成插件
 
-This plugin was generated using the XTP CLI:
+此插件使用 XTP CLI 生成：
 
 ```bash
 xtp plugin init \
@@ -14,45 +14,45 @@ xtp plugin init \
   --name wikimedia-plugin
 ```
 
-## Features
+## 功能
 
-- **Artist URL**: Fetches Wikipedia URL for an artist using Wikidata (by MBID or name), DBpedia, or falls back to a Wikipedia search URL
-- **Artist Biography**: Fetches the introductory text from the artist's Wikipedia page
-- **Artist Images**: Fetches artist images from Wikidata
+- **艺人 URL**：使用 Wikidata（通过 MBID 或名称）、DBpedia 获取艺人的 Wikipedia URL，或回退到 Wikipedia 搜索 URL
+- **艺人简介**：获取艺人 Wikipedia 页面的介绍性文本
+- **艺人图片**：从 Wikidata 获取艺人图片
 
-## Building
+## 构建
 
-### Using TinyGo
+### 使用 TinyGo
 
 ```bash
 tinygo build -target wasip1 -buildmode=c-shared -o plugin.wasm .
 zip -j wikimedia.ndp manifest.json plugin.wasm
 ```
 
-### Using the Makefile
+### 使用 Makefile
 
-From the `plugins/examples` directory:
+在 `plugins/examples` 目录下：
 
 ```bash
 make wikimedia.ndp
 ```
 
-### Using XTP CLI
+### 使用 XTP CLI
 
 ```bash
 xtp plugin build
 zip -j wikimedia.ndp manifest.json dist/plugin.wasm
 ```
 
-## Installation
+## 安装
 
-Copy the `.ndp` file to your Navidrome plugins folder:
+将 `.ndp` 文件复制到你的 Navidrome 插件文件夹：
 
 ```bash
 cp wikimedia.ndp /path/to/navidrome/plugins/
 ```
 
-Then enable plugins in your `navidrome.toml`:
+然后在你的 `navidrome.toml` 中启用插件：
 
 ```toml
 [Plugins]
@@ -60,22 +60,22 @@ Enabled = true
 Folder = "/path/to/navidrome/plugins"
 ```
 
-Add the plugin to your agents list:
+将插件添加到你的代理列表：
 
 ```toml
 Agents = "lastfm,wikimedia"
 ```
 
-## Testing with Extism CLI
+## 使用 Extism CLI 测试
 
-Install the [Extism CLI](https://extism.org/docs/install):
+安装 [Extism CLI](https://extism.org/docs/install)：
 
 ```bash
 brew install extism/tap/extism  # macOS
 # or see https://extism.org/docs/install for other platforms
 ```
 
-Extract the wasm file from the package and test:
+从包中提取 wasm 文件并测试：
 
 ```bash
 # Extract wasm from package
@@ -87,12 +87,12 @@ extism call wikimedia.wasm nd_get_artist_url --wasi \
   --allow-host "query.wikidata.org"
 ```
 
-Expected output:
+预期输出：
 ```json
 {"url":"https://en.wikipedia.org/wiki/The_Beatles"}
 ```
 
-### Test artist biography
+### 测试艺人简介
 
 ```bash
 extism call wikimedia.wasm nd_get_artist_biography --wasi \
@@ -101,7 +101,7 @@ extism call wikimedia.wasm nd_get_artist_biography --wasi \
   --allow-host "en.wikipedia.org"
 ```
 
-### Test artist images
+### 测试艺人图片
 
 ```bash
 extism call wikimedia.wasm nd_get_artist_images --wasi \
@@ -109,12 +109,12 @@ extism call wikimedia.wasm nd_get_artist_images --wasi \
   --allow-host "query.wikidata.org"
 ```
 
-Expected output:
+预期输出：
 ```json
 {"images":[{"url":"http://commons.wikimedia.org/wiki/Special:FilePath/Beatles%20ad%201965%20just%20the%20beatles%20crop.jpg","size":0}]}
 ```
 
-## Project Structure
+## 项目结构
 
 ```
 wikimedia/
@@ -126,19 +126,19 @@ wikimedia/
 └── xtp.toml      # XTP plugin configuration
 ```
 
-## API Endpoints Used
+## 使用的 API 端点
 
-| Service   | Endpoint                             | Purpose                                                   |
+| 服务   | 端点                             | 用途                                                   |
 |-----------|--------------------------------------|-----------------------------------------------------------|
-| Wikidata  | `https://query.wikidata.org/sparql`  | SPARQL queries for Wikipedia URLs and images              |
-| DBpedia   | `https://dbpedia.org/sparql`         | Fallback SPARQL queries for Wikipedia URLs and short bios |
-| Wikipedia | `https://en.wikipedia.org/w/api.php` | MediaWiki API for article extracts                        |
+| Wikidata  | `https://query.wikidata.org/sparql`  | 用于 Wikipedia URL 和图片的 SPARQL 查询              |
+| DBpedia   | `https://dbpedia.org/sparql`         | Wikipedia URL 和简短简介的回退 SPARQL 查询 |
+| Wikipedia | `https://en.wikipedia.org/w/api.php` | 用于文章摘要的 MediaWiki API                        |
 
-## Implemented Functions
+## 已实现的函数
 
-| Function                  | Description                                   |
+| 函数                  | 描述                                   |
 |---------------------------|-----------------------------------------------|
-| `nd_manifest`             | Returns plugin manifest with HTTP permissions |
-| `nd_get_artist_url`       | Returns Wikipedia URL for an artist           |
-| `nd_get_artist_biography` | Returns artist biography from Wikipedia       |
-| `nd_get_artist_images`    | Returns artist image URLs from Wikidata       |
+| `nd_manifest`             | 返回带 HTTP 权限的插件 manifest |
+| `nd_get_artist_url`       | 返回艺人的 Wikipedia URL           |
+| `nd_get_artist_biography` | 返回来自 Wikipedia 的艺人简介       |
+| `nd_get_artist_images`    | 返回来自 Wikidata 的艺人图片 URL       |

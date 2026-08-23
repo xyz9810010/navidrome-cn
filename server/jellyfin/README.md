@@ -1,19 +1,12 @@
 # Jellyfin API
 
-This package implements a subset of the [Jellyfin](https://jellyfin.org/) REST API on top of
-Navidrome's existing library, users, playlists and scrobbling infrastructure. It lets
-Jellyfin-compatible clients (e.g. [Finamp](https://github.com/jmshrv/finamp),
-[jftui](https://github.com/dylanmtaylor/jftui)) browse and stream a Navidrome library without
-requiring a real Jellyfin server.
+本软件包在 Navidrome 现有的媒体库、用户、播放列表和 scrobbling（听歌记录上报）基础设施之上，实现了 [Jellyfin](https://jellyfin.org/) REST API 的一个子集。它让兼容 Jellyfin 的客户端（例如 [Finamp](https://github.com/jmshrv/finamp)、[jftui](https://github.com/dylanmtaylor/jftui)）无需真正的 Jellyfin 服务器即可浏览和流式播放 Navidrome 媒体库。
 
-It is **not** a full Jellyfin server implementation: only the endpoints needed to browse a music
-library, stream audio, manage favorites/ratings for songs, albums, artists, and playlists, report
-playback, and manage playlists are implemented. Video, live TV, plugins, and Jellyfin's
-admin/dashboard APIs are out of scope.
+它**不是**完整的 Jellyfin 服务器实现：只实现了浏览音乐媒体库、流式播放音频、管理歌曲/专辑/艺人/播放列表的收藏与评分、上报播放，以及管理播放列表所需的端点。视频、直播电视、插件以及 Jellyfin 的管理/仪表盘 API 均不在范围内。
 
-## Enabling
+## 启用
 
-The Jellyfin API is disabled by default. Enable it via `navidrome.toml`:
+Jellyfin API 默认处于禁用状态。可通过 `navidrome.toml` 启用：
 
 ```toml
 [Jellyfin]
@@ -28,7 +21,7 @@ ExposedPublicUsers = "alice, bob"
 MaxConcurrentStreams = 4
 ```
 
-or via environment variables:
+或通过环境变量：
 
 ```bash
 ND_JELLYFIN_ENABLED=true
@@ -36,218 +29,115 @@ ND_JELLYFIN_SERVERNAME="My Music Server"
 ND_JELLYFIN_EXPOSEDPUBLICUSERS="alice,bob"
 ```
 
-Once enabled, the API is mounted at:
+启用后，API 挂载于：
 
 ```
 http://<host>:<port>/jellyfin
 ```
 
-All the paths below are relative to that base URL (e.g. `System/Info/Public` means
-`http://localhost:4533/jellyfin/System/Info/Public`). Routes are matched **case-insensitively**,
-since real Jellyfin clients (and `jellyfin-apiclient-python`) send mixed-case paths.
+下面的所有路径都相对于该基础 URL（例如 `System/Info/Public` 意味着 `http://localhost:4533/jellyfin/System/Info/Public`）。路由匹配是**不区分大小写**的，因为真正的 Jellyfin 客户端（以及 `jellyfin-apiclient-python`）会发送混合大小写的路径。
 
-## Authentication
+## 身份认证
 
-Jellyfin clients authenticate with `POST /Users/AuthenticateByName` using the user's Navidrome
-username/password, and get back an `AccessToken` (a Navidrome JWT). That token is then sent on
-every subsequent request as the `X-Emby-Token` header (or embedded in the
-`X-Emby-Authorization`/`Authorization` header's `Token="..."` field, or as an `api_key`/`ApiKey`
-query param — all forms are accepted, matching what different clients do).
+Jellyfin 客户端使用用户的 Navidrome 用户名/密码，通过 `POST /Users/AuthenticateByName` 进行认证，并获得一个 `AccessToken`（一个 Navidrome JWT）。此后，该令牌会在每个后续请求中作为 `X-Emby-Token` 请求头发送（或嵌入在 `X-Emby-Authorization`/`Authorization` 请求头的 `Token="..."` 字段中，或作为 `api_key`/`ApiKey` 查询参数——所有这些形式都被接受，与不同客户端的做法相匹配）。
 
-`POST /Users/AuthenticateByName` is rate-limited per IP with the same limiter as the native
-`/auth/login` (`AuthRequestLimit`/`AuthWindowLength`), since it's an unauthenticated brute-force
-surface.
+`POST /Users/AuthenticateByName` 按 IP 使用与原生 `/auth/login` 相同的限流器（`AuthRequestLimit`/`AuthWindowLength`）进行限流，因为它是一个未认证的暴力破解攻击面。
 
-Access tokens do not expire, matching real Jellyfin. They are revoked by a password change, which bumps the user's token epoch.
+访问令牌不会过期，与真正的 Jellyfin 一致。它们会因密码更改而被撤销，密码更改会推进用户的令牌纪元（token epoch）。
 
-### Public user list (login picker)
+### 公开用户列表（登录选择器）
 
-`GET /Users/Public` lets a client render a login user-picker (tap a user, then just type the
-password) instead of a blank username field. It's **unauthenticated**, so by default it exposes
-**no** users. Set `Jellyfin.ExposedPublicUsers` to a comma-separated list of usernames to advertise:
+`GET /Users/Public` 允许客户端渲染一个登录用户选择器（点选一个用户，然后只需输入密码），而非空白的用户名字段。它是**未认证**的，因此默认情况下不会公开**任何**用户。将 `Jellyfin.ExposedPublicUsers` 设置为逗号分隔的用户名列表以对外公布：
 
 ```toml
 [Jellyfin]
 ExposedPublicUsers = "alice, bob"
 ```
 
-Only the named users are listed (never the full user table), resolved live per request; a configured
-name that doesn't exist is skipped and logged at `Warn`. Each entry is a minimal DTO (`Name`, `Id`)
-with no `Policy`/`Configuration`, so admin status isn't leaked to unauthenticated callers, and no
-avatar (`PrimaryImageTag` omitted — Navidrome has no per-user profile images).
+只会列出指定的用户（绝不会列出整个用户表），并按请求实时解析；配置中不存在的名称会被跳过，并以 `Warn` 级别记录日志。每个条目都是一个最小化的 DTO（`Name`、`Id`），不带 `Policy`/`Configuration`，因此管理员身份不会泄露给未认证的调用方，也没有头像（省略 `PrimaryImageTag`——Navidrome 没有针对单个用户的个人资料图片）。
 
-## Players and sessions
+## 播放器与会话
 
-Every authenticated request registers (or refreshes) the calling device as a Navidrome player,
-mirroring Subsonic's `getPlayer` — so a Jellyfin client shows up in the players list (and scrobbling
-has a player) as soon as it makes any authenticated call, not only when it reports playback. The
-player id is the device id from `X-Emby-Authorization` (`DeviceId="..."`); the player name is
-`Client [Device]`. Those field values are URL-decoded, since some clients percent-encode them
-(Jellify sends `Device="Pixel%208%20Pro"`, Finamp sends it raw). A request that carries no
-client/device info (e.g. the `GET socket` handshake, which authenticates via `?api_key=` only) is
-skipped, so it doesn't create a nameless player.
+每个已认证的请求都会将调用设备注册（或刷新）为一个 Navidrome 播放器，与 Subsonic 的 `getPlayer` 类似——因此 Jellyfin 客户端只要发出任何已认证的调用，就会出现在播放器列表中（并且 scrobbling 也有一个播放器），而不必等到它上报播放。播放器 id 是来自 `X-Emby-Authorization` 的设备 id（`DeviceId="..."`）；播放器名称是 `Client [Device]`。这些字段值会进行 URL 解码，因为有些客户端会对它们进行百分号编码（Jellify 发送 `Device="Pixel%208%20Pro"`，Finamp 则发送原始值）。不带客户端/设备信息的请求（例如 `GET socket` 握手，它仅通过 `?api_key=` 进行认证）会被跳过，从而不会创建无名播放器。
 
-## Multi-library behavior
+## 多媒体库行为
 
-Jellyfin has no native concept of multiple music libraries the way Navidrome does, so each
-Navidrome library the current user can access is exposed as its own top-level Jellyfin
-"CollectionFolder" view (`GET /UserViews`), instead of merging every library into a single view.
-Browsing (`/Items`), artists, and the "Latest" list are all scoped to the libraries the
-authenticated user has access to; a library (or item within it) the user cannot access returns
-`404`, never `403`, so ids can't be used as an existence oracle.
+Jellyfin 没有像 Navidrome 那样的多音乐媒体库原生概念，因此当前用户可访问的每个 Navidrome 媒体库都会作为独立的顶层 Jellyfin "CollectionFolder" 视图（`GET /UserViews`）公开，而不是将所有媒体库合并到单一视图中。浏览（`/Items`）、艺人以及“最新”列表都限定在已认证用户可访问的媒体库范围内；用户无法访问的媒体库（或其中的条目）返回 `404` 而绝不会是 `403`，因此 id 不能被用作存在性探测手段。
 
-### Browsing filters
+### 浏览过滤条件
 
-`GET /Items` accepts the filter params clients use to build screens: `ParentId` (a library view id
-for scoping, an artist id when browsing into an artist's albums, or an album id when browsing into
-an album's tracks); `AlbumArtistIds`/`ArtistIds`/`contributingArtistIds` (an artist's albums or
-tracks — Finamp's artist screen sends these *alongside* `ParentId=<libraryId>`); `AlbumIds` (an
-album's tracks — Feishin fetches them this way instead of `ParentId`); `GenreIds` (a
-genre's albums or tracks — Finamp's genre screen sends it the same way; `/Artists/AlbumArtists`
-and `MusicArtist` queries accept it too, matching artists credited on an album of that genre);
-`SearchTerm`;
-`Filters` (`IsFavorite`, `IsFavoriteOrLikes`, `IsPlayed`, `IsUnplayed`) and the standalone
-`isFavorite`/`isPlayed` booleans it can also be expressed as — `Filters` wins when both are sent, as
-in Jellyfin; `Likes`, `Dislikes`, `IsFolder`, `IsNotFolder` and `IsResumable` have no Navidrome
-equivalent and are ignored; `SortBy`/`SortOrder` (every recognized key is applied in order, so secondary keys break ties;
-unrecognized keys are skipped, and `Random` always sorts alone);
-`StartIndex`/`Limit`; and `Ids` (batch fetch by id). `Recursive=false` with a library `ParentId`
-returns direct children only (no tracks — no track is a library's direct child).
+`GET /Items` 接受客户端用于构建界面的过滤参数：`ParentId`（用于限定范围的媒体库视图 id、浏览某艺人专辑时的艺人 id，或浏览某专辑曲目时的专辑 id）；`AlbumArtistIds`/`ArtistIds`/`contributingArtistIds`（某艺人的专辑或曲目——Finamp 的艺人界面会*连同* `ParentId=<libraryId>` 一起发送这些参数）；`AlbumIds`（某专辑的曲目——Feishin 以这种方式而非 `ParentId` 获取它们）；`GenreIds`（某流派的专辑或曲目——Finamp 的流派界面以相同方式发送它；`/Artists/AlbumArtists` 和 `MusicArtist` 查询也接受它，以匹配该流派专辑中署名过的艺人）；`SearchTerm`；`Filters`（`IsFavorite`、`IsFavoriteOrLikes`、`IsPlayed`、`IsUnplayed`）以及它也可以被表达为的独立 `isFavorite`/`isPlayed` 布尔值——当两者都发送时以 `Filters` 为准，与 Jellyfin 一致；`Likes`、`Dislikes`、`IsFolder`、`IsNotFolder` 和 `IsResumable` 没有对应的 Navidrome 等价物，会被忽略；`SortBy`/`SortOrder`（每个被识别的键都会按顺序应用，因此次要键可用来打破并列；未识别的键会被跳过，而 `Random` 总是单独排序）；`StartIndex`/`Limit`；以及 `Ids`（按 id 批量获取）。带媒体库 `ParentId` 且 `Recursive=false` 时只返回直接子项（不含曲目——没有任何曲目是媒体库的直接子项）。
 
-## Implemented endpoints
+## 已实现的端点
 
-| Area | Endpoints |
+| 区域 | 端点 |
 |---|---|
-| Handshake / system | `GET System/Info/Public`, `GET System/Info` (authenticated), `GET`/`POST System/Ping`, `GET System/Endpoint` (authenticated), `GET QuickConnect/Enabled` |
-| Auth | `POST Users/AuthenticateByName`, `GET Users/Public` |
-| Users | `GET UserViews`, `GET Users/{userId}/Views`, `GET Users/Me`, `GET Users/{userId}` |
-| Browsing | `GET Items`, `GET Users/{userId}/Items`, `GET Items/{itemId}`, `GET Users/{userId}/Items/{itemId}`, `GET Users/{userId}/Items/Latest`, `DELETE Items/{itemId}` (playlists only) |
-| Artists / genres | `GET Artists`, `GET Artists/AlbumArtists`, `GET Genres`, `GET MusicGenres` |
-| Similar / mixes | `GET Artists/{itemId}/Similar`, `GET Items/{itemId}/Similar`, `GET Items/{itemId}/InstantMix` |
-| Images | `GET Items/{itemId}/Images/{type}[/{index}]` (public), `POST`/`DELETE Items/{itemId}/Images/{type}` (playlist cover, authenticated) |
-| Favorites / ratings for songs, albums, artists, and playlists | `POST`/`DELETE UserFavoriteItems/{itemId}`, `POST`/`DELETE Users/{userId}/FavoriteItems/{itemId}`, `POST`/`DELETE Users/{userId}/Items/{itemId}/Rating`, `GET UserItems/{itemId}/UserData`, `GET Users/{userId}/Items/{itemId}/UserData` |
-| Streaming | `GET Audio/{itemId}/stream[.{container}]`, `GET Audio/{itemId}/universal`, `GET Audio/{itemId}/main.m3u8`, `GET Items/{itemId}/File`, `GET Items/{itemId}/Download`, `GET`/`POST Items/{itemId}/PlaybackInfo` |
-| Lyrics | `GET Audio/{itemId}/Lyrics` |
-| Playback reporting | `POST Sessions/Playing`, `POST Sessions/Playing/Progress`, `POST Sessions/Playing/Stopped`, `POST Sessions/Capabilities[/Full]` |
-| Playlists | `POST Playlists`, `GET Playlists/{playlistId}`, `POST Playlists/{playlistId}` (rename / visibility / replace tracks), `GET Playlists/{playlistId}/Items`, `POST`/`DELETE Playlists/{playlistId}/Items`, `GET Playlists/{playlistId}/Users[/{userId}]` |
-| Real-time | `GET socket` (WebSocket; keeps clients like Finamp from 404-loop-reconnecting) |
-| AudioMuse-AI (see below) | `GET AudioMuseAI/info`, `GET AudioMuseAI/health`, `GET AudioMuseAI/similar_tracks`, `GET AudioMuseAI/find_path` |
+| 握手 / 系统 | `GET System/Info/Public`, `GET System/Info` (需认证), `GET`/`POST System/Ping`, `GET System/Endpoint` (需认证), `GET QuickConnect/Enabled` |
+| 认证 | `POST Users/AuthenticateByName`, `GET Users/Public` |
+| 用户 | `GET UserViews`, `GET Users/{userId}/Views`, `GET Users/Me`, `GET Users/{userId}` |
+| 浏览 | `GET Items`, `GET Users/{userId}/Items`, `GET Items/{itemId}`, `GET Users/{userId}/Items/{itemId}`, `GET Users/{userId}/Items/Latest`, `DELETE Items/{itemId}` (仅播放列表) |
+| 艺人 / 流派 | `GET Artists`, `GET Artists/AlbumArtists`, `GET Genres`, `GET MusicGenres` |
+| 相似 / 混音 | `GET Artists/{itemId}/Similar`, `GET Items/{itemId}/Similar`, `GET Items/{itemId}/InstantMix` |
+| 图片 | `GET Items/{itemId}/Images/{type}[/{index}]` (公开), `POST`/`DELETE Items/{itemId}/Images/{type}` (播放列表封面, 需认证) |
+| 歌曲、专辑、艺人和播放列表的收藏 / 评分 | `POST`/`DELETE UserFavoriteItems/{itemId}`, `POST`/`DELETE Users/{userId}/FavoriteItems/{itemId}`, `POST`/`DELETE Users/{userId}/Items/{itemId}/Rating`, `GET UserItems/{itemId}/UserData`, `GET Users/{userId}/Items/{itemId}/UserData` |
+| 流式播放 | `GET Audio/{itemId}/stream[.{container}]`, `GET Audio/{itemId}/universal`, `GET Audio/{itemId}/main.m3u8`, `GET Items/{itemId}/File`, `GET Items/{itemId}/Download`, `GET`/`POST Items/{itemId}/PlaybackInfo` |
+| 歌词 | `GET Audio/{itemId}/Lyrics` |
+| 播放上报 | `POST Sessions/Playing`, `POST Sessions/Playing/Progress`, `POST Sessions/Playing/Stopped`, `POST Sessions/Capabilities[/Full]` |
+| 播放列表 | `POST Playlists`, `GET Playlists/{playlistId}`, `POST Playlists/{playlistId}` (重命名 / 可见性 / 替换曲目), `GET Playlists/{playlistId}/Items`, `POST`/`DELETE Playlists/{playlistId}/Items`, `GET Playlists/{playlistId}/Users[/{userId}]` |
+| 实时 | `GET socket` (WebSocket; 防止 Finamp 等客户端陷入 404 循环重连) |
+| AudioMuse-AI (见下文) | `GET AudioMuseAI/info`, `GET AudioMuseAI/health`, `GET AudioMuseAI/similar_tracks`, `GET AudioMuseAI/find_path` |
 
-Any other path returns a `404` with a `{}` JSON body, and is logged server-side at `Debug` level
-as `Jellyfin API: unhandled route` (method + path). If a client you're testing needs an endpoint
-that isn't in the table above, check the server logs for these lines to see exactly what it's
-requesting.
+任何其他路径都会返回带有 `{}` JSON 主体的 `404`，并在服务器端以 `Debug` 级别记录为 `Jellyfin API: unhandled route`（方法 + 路径）。如果你正在测试的客户端需要上表中没有的端点，请检查服务器日志中的这些行，以确切了解它正在请求什么。
 
-## Playlist management
+## 播放列表管理
 
-Playlists are the main writable surface of this API:
+播放列表是该 API 的主要可写界面：
 
-- **Container expansion.** When creating (`POST Playlists`), adding to (`POST Playlists/{id}/Items`)
-  or replacing (`POST Playlists/{id}`) a playlist, the `Ids` may contain **containers** — album,
-  artist or playlist ids — not just song ids. Each is expanded into its tracks (in order) before
-  the write, matching how Jellyfin clients populate these lists. A bare song id passes through.
-- **Id list encoding.** `POST`/`DELETE Playlists/{id}/Items` accept the id list both ways clients
-  spell it: repeated params (`ids=X&ids=Y`, how Jellify's `@jellyfin/sdk` serializes arrays) and a
-  single comma-separated value (`ids=X,Y`, Finamp). Reading only the first value would add just one
-  track of an expanded album.
-- **Update** (`POST Playlists/{id}`): with `Ids` present, the track list is **replaced** (Finamp
-  uses this for reordering) — an explicit empty `Ids` (`[]`) **clears** the playlist, while an
-  omitted `Ids` leaves the tracks untouched and only updates `Name`/`IsPublic`. `IsPublic` maps to
-  Navidrome's `Public` flag, surfaced to clients as `OpenAccess` on `GET Playlists/{id}`.
-- **Cover art**: `POST Items/{id}/Images/Primary` uploads a playlist cover (raw or base64 body,
-  JPEG/PNG/WebP/GIF detected by magic number, extension from `Content-Type`); `DELETE` removes it.
-  Only playlists are writable through this API — album/artist covers come from tag/sidecar scanning,
-  so a non-playlist id returns `501`. Uploads honor the same gates as the native endpoint: they're
-  bounded by `MaxImageUploadSize` and require `EnableArtworkUpload` for non-admins.
-- **`PlaylistItemId`**: `GET Playlists/{id}/Items` tags each entry with `PlaylistItemId` (the
-  playlist-track row id, distinct from the song id) so a client can echo it back via
-  `DELETE Playlists/{id}/Items?EntryIds=...` to remove one occurrence of a song that appears more
-  than once in the same playlist.
+- **容器展开。** 在创建（`POST Playlists`）、添加（`POST Playlists/{id}/Items`）或替换（`POST Playlists/{id}`）播放列表时，`Ids` 中可能包含**容器**——专辑、艺人或播放列表 id——而不仅仅是歌曲 id。每个容器都会在写入前按顺序展开为其曲目，与 Jellyfin 客户端填充这些列表的方式一致。裸歌曲 id 会直接通过。
+- **Id 列表编码。** `POST`/`DELETE Playlists/{id}/Items` 接受客户端两种拼写 id 列表的方式：重复参数（`ids=X&ids=Y`，即 Jellify 的 `@jellyfin/sdk` 序列化数组的方式）和单个逗号分隔值（`ids=X,Y`，Finamp）。如果只读取第一个值，就只会添加展开专辑中的一首曲目。
+- **更新**（`POST Playlists/{id}`）：当存在 `Ids` 时，曲目列表会被**替换**（Finamp 用它来重新排序）——显式的空 `Ids`（`[]`）会**清空**播放列表，而省略 `Ids` 则保持曲目不变，只更新 `Name`/`IsPublic`。`IsPublic` 映射到 Navidrome 的 `Public` 标志，在 `GET Playlists/{id}` 上以 `OpenAccess` 呈现给客户端。
+- **封面**：`POST Items/{id}/Images/Primary` 上传播放列表封面（原始或 base64 主体，通过魔数检测 JPEG/PNG/WebP/GIF，扩展名来自 `Content-Type`）；`DELETE` 则移除它。只有播放列表可通过此 API 写入——专辑/艺人封面来自标签/sidecar 扫描，因此非播放列表 id 返回 `501`。上传遵循与原生端点相同的限制：受 `MaxImageUploadSize` 约束，且非管理员需要 `EnableArtworkUpload`。
+- **`PlaylistItemId`**：`GET Playlists/{id}/Items` 会为每个条目标注 `PlaylistItemId`（播放列表-曲目行 id，与歌曲 id 不同），以便客户端可以通过 `DELETE Playlists/{id}/Items?EntryIds=...` 回传它，以移除同一播放列表中出现多次的某首歌的某一次出现。
 
-Ownership is enforced by `core/playlists`: a non-owner editing/deleting a playlist gets `403` if
-it is visible to them (public) or `404` if it is not (private) — the API never reveals that
-someone else's private playlist exists.
+所有权由 `core/playlists` 强制执行：非所有者编辑/删除播放列表时，如果播放列表对其可见（公开）则得到 `403`，如果不可见（私有）则得到 `404`——该 API 绝不会泄露他人的私有播放列表的存在。
 
-## Images
+## 图片
 
-The `GET Items/{itemId}/Images/{type}` route is intentionally **public** (artwork isn't sensitive,
-matching Jellyfin's lenient image handling), so it carries no authenticated user. Artwork is
-therefore resolved under an **elevated admin context** — the same approach `core/artwork`'s cache
-warmer uses — so user-scoped items like private playlists still resolve their cover instead of
-falling back to the placeholder. Album, artist, media-file and playlist ids are all resolved to
-their Navidrome `ArtworkID`.
+`GET Items/{itemId}/Images/{type}` 路由故意设为**公开**（封面并不敏感，与 Jellyfin 宽松的图片处理一致），因此它不携带已认证用户。因此，封面在**提升权限的管理员上下文**下解析——与 `core/artwork` 缓存预热器使用的方法相同——这样像私有播放列表这类按用户限定的条目仍能解析出其封面，而不是回退到占位图。专辑、艺人、媒体文件和播放列表 id 都会被解析为它们对应的 Navidrome `ArtworkID`。
 
-## Item ids are GUIDs
+## 条目 id 是 GUID
 
-Jellyfin item ids are GUIDs, serialized as 32 lowercase hex chars with no dashes
-(`Guid.ToString("N")`). Navidrome ids are canonical 22-char base62 encodings of a 128-bit value,
-so `dto.EncodeID`/`dto.DecodeID` map between the two via `model/id` — losslessly except for the
-~2⁻⁹⁶ chance an id's 128-bit value falls in the reserved space below (leading 12 bytes all zero).
+Jellyfin 的条目 id 是 GUID，序列化为 32 个小写十六进制字符且不带连字符（`Guid.ToString("N")`）。Navidrome 的 id 是 128 位值的规范 22 字符 base62 编码，因此 `dto.EncodeID`/`dto.DecodeID` 通过 `model/id` 在两者之间进行映射——除了约 2⁻⁹⁶ 的概率（某个 id 的 128 位值落入下方保留空间）外是无损的（前 12 字节全为零）。
 
-Three emitted ids aren't 128-bit values: integer library ids, the synthetic playlists folder, and
-`PlaylistItemId` (a playlist *entry position* — `playlist_tracks.id` is an `integer` column).
-They use a reserved GUID space — 12 zero bytes, a non-zero kind tag, a 24-bit payload — so
-library `1` is `00000000000000000000000001000001`. The tag is never zero, because Jellyfin
-serializes the all-zero GUID as `null`.
+有三个发出的 id 不是 128 位值：整数媒体库 id、合成的播放列表文件夹，以及 `PlaylistItemId`（一个播放列表*条目位置*——`playlist_tracks.id` 是一个 `integer` 列）。它们使用保留的 GUID 空间——12 个零字节、一个非零的种类标签、一个 24 位负载——因此媒体库 `1` 就是 `00000000000000000000000001000001`。该标签永远不会为零，因为 Jellyfin 会把全零 GUID 序列化为 `null`。
 
-`DecodeID` accepts dashed and uppercase GUIDs (Jellyfin's `Guid.Parse` does) and returns
-`ok=false` for anything malformed — including "" — which handlers surface as a 404.
+`DecodeID` 接受带连字符和大写的 GUID（Jellyfin 的 `Guid.Parse` 也是这样做的），并对任何格式错误的内容——包括 ""——返回 `ok=false`，处理程序会将其表现为 404。
 
-The wire format must stay GUID-shaped for this reason: Finamp's saved-queue persistence bit-packs
-each item id into exactly 16 bytes (`packIds()` in `lib/models/finamp_models.dart`), so a 32-hex
-GUID round-trips exactly, whereas a longer id would be silently truncated.
+出于这个原因，线上格式必须保持 GUID 形状：Finamp 的已保存队列持久化会将每个条目 id 位打包成恰好 16 字节（`lib/models/finamp_models.dart` 中的 `packIds()`），因此 32 位十六进制 GUID 能精确往返，而更长的 id 会被静默截断。
 
-## Streaming and transcoding
+## 流式播放与转码
 
-The stream endpoints reuse the same transcode-decision pipeline as the Subsonic `/stream` endpoint:
+流式播放端点复用与 Subsonic `/stream` 端点相同的转码决策流水线：
 
-- **`GET Audio/{id}/stream[.{container}]` / `universal`** — the target format comes from the
-  `.{container}` path suffix, the `container` param, or (when neither is present) `audioCodec`.
-  `audioBitRate`/`maxStreamingBitrate` are bits/sec, per Jellyfin convention. `static=true`
-  forces direct play (raw), never a transcode.
-- **`GET Items/{id}/File` / `Download`** — always the original file bytes, matching real Jellyfin.
-  Finamp plays through `File` when its transcoding setting is off, so an undecodable format (e.g.
-  DSF) can't be rescued server-side on this path.
-- **`GET Audio/{id}/main.m3u8`** — the endpoint Finamp plays through when its transcoding setting
-  is on. Implemented as a single-segment HLS VOD playlist whose one segment is the progressive
-  transcode endpoint above, so the whole pipeline (decision, cache, forced transcoding) is reused.
-  Segment codec honors `audioCodec` but is limited to what HLS packed-audio can carry (`aac`,
-  `mp3`); anything else falls back to `aac`. Seeking re-reads from the start, like Subsonic
-  transcoded streams.
-- **Server-forced transcoding.** A format/bitrate configured on the registered player (Settings →
-  Players) is applied to `stream`, `universal` and `main.m3u8` — same override semantics as
-  Subsonic. `File`/`Download` stay raw. For HLS clients, force `aac` or `mp3`; other formats are
-  advertised and served but packed-audio players won't decode them.
+- **`GET Audio/{id}/stream[.{container}]` / `universal`**——目标格式来自 `.{container}` 路径后缀、`container` 参数，或（当两者都不存在时）`audioCodec`。`audioBitRate`/`maxStreamingBitrate` 以比特/秒为单位，遵循 Jellyfin 惯例。`static=true` 强制直接播放（原始），绝不转码。
+- **`GET Items/{id}/File` / `Download`**——始终是原始文件字节，与真正的 Jellyfin 一致。当 Finamp 的转码设置关闭时，它通过 `File` 播放，因此无法解码的格式（例如 DSF）在这条路径上无法在服务器端得到补救。
+- **`GET Audio/{id}/main.m3u8`**——当 Finamp 的转码设置开启时，它通过该端点播放。它被实现为单段 HLS VOD 播放列表，其唯一一个分段就是上面的渐进式转码端点，因此整条流水线（决策、缓存、强制转码）都被复用。分段的编解码器遵循 `audioCodec`，但仅限于 HLS 打包音频所能承载的格式（`aac`、`mp3`）；其他任何格式都会回退到 `aac`。与 Subsonic 转码流一样，跳转播放会从头重新读取。
+- **服务器强制转码。** 在已注册播放器上配置的格式/比特率（设置 → 播放器）会应用于 `stream`、`universal` 和 `main.m3u8`——覆盖语义与 Subsonic 相同。`File`/`Download` 保持原始。对于 HLS 客户端，请强制使用 `aac` 或 `mp3`；其他格式会被通告并提供服务，但打包音频播放器无法解码它们。
 
-## AudioMuse-AI compatible endpoints
+## 兼容 AudioMuse-AI 的端点
 
-Compatibility shim for Jellyfin front-ends that integrate [AudioMuse-AI](https://github.com/NeptuneHub/audiomuse-ai-plugin)
-— e.g. [Symfonium](https://symfonium.app/) can use these endpoints for sonic mixes when
-connected as a Jellyfin client.
-Backed natively by Navidrome's `core/sonic` engine (the `SonicSimilarity` plugin capability) — no
-external AudioMuse-AI backend or proxy is involved. The endpoints are gated on a `SonicSimilarity`
-plugin being loaded, like the Subsonic `sonicSimilarity` OpenSubsonic extension.
+针对集成了 [AudioMuse-AI](https://github.com/NeptuneHub/audiomuse-ai-plugin) 的 Jellyfin 前端的兼容层——例如 [Symfonium](https://symfonium.app/) 可以在以 Jellyfin 客户端连接时，使用这些端点进行声学混音（sonic mixes）。它由 Navidrome 的 `core/sonic` 引擎（`SonicSimilarity` 插件能力）原生支持——不涉及任何外部的 AudioMuse-AI 后端或代理。这些端点以是否加载了 `SonicSimilarity` 插件为门槛，与 Subsonic 的 `sonicSimilarity` OpenSubsonic 扩展一样。
 
-- `GET /AudioMuseAI/info` — returns `{"Version": <navidrome version>, "AvailableEndpoints": [...]}` (200).
-  `AvailableEndpoints` lists the endpoints below only when a provider is loaded; otherwise it is empty.
-- `GET /AudioMuseAI/health` — liveness probe: 200 with an empty body when a provider is loaded, else 404.
-- `GET /AudioMuseAI/similar_tracks?item_id=<id>&n=10&eliminate_duplicates=true` — 404 when no provider is
-  loaded; otherwise a JSON array of `{author, distance, item_id, title}` (200; `[]` when there is no match
-  or no `item_id`). `eliminate_duplicates` (default true) limits results to one track per artist.
-- `GET /AudioMuseAI/find_path?start_song_id=<id>&end_song_id=<id>&max_steps=25` — 404 when no provider is
-  loaded; otherwise `{"path": [{author, item_id, title, tempo?}], "total_distance": <float>}` (200), or 400
-  with `start_song_id and end_song_id are required.` when either id is missing.
+- `GET /AudioMuseAI/info`——返回 `{"Version": <navidrome version>, "AvailableEndpoints": [...]}`（200）。`AvailableEndpoints` 仅在加载了提供者时才列出下面的端点；否则为空。
+- `GET /AudioMuseAI/health`——存活探针：加载了提供者时返回 200 及空主体，否则返回 404。
+- `GET /AudioMuseAI/similar_tracks?item_id=<id>&n=10&eliminate_duplicates=true`——未加载提供者时返回 404；否则返回一个 `{author, distance, item_id, title}` 的 JSON 数组（200；没有匹配项或没有 `item_id` 时为 `[]`）。`eliminate_duplicates`（默认 true）将结果限制为每个艺人一首曲目。
+- `GET /AudioMuseAI/find_path?start_song_id=<id>&end_song_id=<id>&max_steps=25`——未加载提供者时返回 404；否则返回 `{"path": [{author, item_id, title, tempo?}], "total_distance": <float>}`（200），当任一 id 缺失时返回 400 及 `start_song_id and end_song_id are required.`。
 
-`item_id`/`start_song_id`/`end_song_id` are the GUID-form ids Navidrome hands Jellyfin clients.
-`tempo` comes from the track's BPM when known; the richer AudioMuse per-track features
-(`energy`, `key`, `mood_vector`, `scale`, `other_features`) are not provided. In multi-library
-setups, `find_path`'s `path` and `total_distance` only reflect hops through tracks in libraries
-the caller can access, since hops through inaccessible libraries are filtered out of the result.
+`item_id`/`start_song_id`/`end_song_id` 是 Navidrome 交给 Jellyfin 客户端的 GUID 形式 id。`tempo` 在已知时来自曲目的 BPM；更丰富的 AudioMuse 每曲目特性（`energy`、`key`、`mood_vector`、`scale`、`other_features`）不会被提供。在多媒体库设置中，`find_path` 的 `path` 和 `total_distance` 只反映通过调用方可访问媒体库中曲目的跳转，因为通过不可访问媒体库的跳转会被从结果中过滤掉。
 
-## curl walkthrough
+## curl 操作示例
 
-This mirrors the sequence a real client (e.g. Finamp) follows: handshake, login, browse the
-library hierarchy, fetch playback info, stream, favorite, report playback, and manage a playlist.
+这模拟了真实客户端（例如 Finamp）所遵循的顺序：握手、登录、浏览媒体库层级、获取播放信息、流式播放、收藏、上报播放以及管理播放列表。
 
 ```bash
 BASE=http://localhost:4533/jellyfin
@@ -304,55 +194,18 @@ curl -s -X DELETE "${AUTH[@]}" "$BASE/Playlists/$PLAYLIST_ID/Items?EntryIds=$ENT
 curl -s -X DELETE "${AUTH[@]}" "$BASE/Items/$PLAYLIST_ID"
 ```
 
-## Testing
+## 测试
 
-Handler-level unit tests live alongside each file (`*_test.go`). A full end-to-end suite in
-[`e2e/`](e2e) exercises every endpoint through the real router against a real SQLite database and
-real repositories (only artwork/streaming/ffmpeg are stubbed), with per-`Describe` snapshot
-isolation — mirroring the Subsonic `server/subsonic/e2e` suite. Run it with:
+处理程序级别的单元测试与每个文件放在一起（`*_test.go`）。[`e2e/`](e2e) 中的完整端到端测试套件通过真实路由器，针对真实的 SQLite 数据库和真实仓库，对每个端点进行演练（只有封面/流式播放/ffmpeg 被替换为桩），并提供按 `Describe` 划分的快照隔离——与 Subsonic 的 `server/subsonic/e2e` 套件一致。运行方式：
 
 ```bash
 make test PKG=./server/jellyfin/...
 ```
 
-## Known limitations
+## 已知限制
 
-- **Genres are global.** `GET Genres`/`MusicGenres` is not scoped to the current user's
-  libraries (genre tags aren't per-library entities in Navidrome's model).
-- **Artist item-access relies on list-time scoping.** Unlike albums and songs (which each
-  belong to exactly one library and are checked against `user.HasLibraryAccess` on every
-  fetch), an artist can have content across multiple libraries via `library_artist`, so there's
-  no single library id to gate a direct `GET Items/{artistId}` or favorite/rating call against.
-  Access control for artists is enforced by scoping the `Artists`/`Items?IncludeItemTypes=MusicArtist`
-  *list* to the user's libraries, plus the persistence layer's own defense-in-depth; a client
-  that already has an artist id from elsewhere is not re-checked against library membership.
-- **Blurhashes are synthetic, not computed from the artwork (follow-up).** `ImageBlurHashes` is
-  populated by `dto/blurhash.go`, which derives a well-formed **1-component (solid color)**
-  blurhash by hashing the item id — it never looks at the actual image. Real Jellyfin computes a
-  multi-component blurhash from the cover's pixels (downscaled to 128×128) once at scan time and
-  stores it per image, so its placeholder approximates the art. Ours satisfies the protocol
-  (Finamp gets a valid value to use as a de-dup key and a placeholder, no missing-blurhash
-  warning) but renders as a flat color while art loads. A proper implementation would compute the
-  real blurhash in the `core/artwork` pipeline (where the image is already decoded), cache it
-  keyed like the artwork, and have the mappers read it — keeping the synthetic value as a fallback
-  for art that hasn't been rendered yet.
-- **The WebSocket only keep-alives; it pushes no events (follow-up).** `GET socket` sends a
-  `ForceKeepAlive` and answers `KeepAlive` pings so real-time clients (Finamp) settle into a
-  working session instead of 404-loop-reconnecting, but it never pushes anything. A follow-up
-  would broadcast real session/playstate and library-change events over it (via `server/events`),
-  mirroring Jellyfin's session messages.
-- **Lyrics.** `GET Audio/{id}/Lyrics` serves the main lyric track as a `LyricDto` (`Start` in
-  100ns ticks, word-level `Cues` when present), resolved through the full `core/lyrics` pipeline
-  (embedded, `.lrc` sidecars, plugins per `LyricsPriority`) behind a 5-minute TTL cache that also
-  caches misses — Jellify fetches for every played track, Feishin per song change, so lyric-less
-  tracks are the hot path. No lyrics → 404 (never an empty 200), which all three clients degrade
-  gracefully. Finamp gates its lyrics view on a `Lyric` `MediaStream` (not `HasLyrics`, which is
-  just a list badge): browse lists advertise it from embedded lyrics only (the `"[]"` sentinel
-  check — the column is never `""` post-scan), while `PlaybackInfo` runs the full pipeline per
-  track so sidecar/plugin lyrics also light up. Feishin additionally requires server version
-  ≥ 10.9 — the reason `jellyfinVersion` is 10.9.11.
-  Concurrent misses on the same track share one pipeline invocation (`SimpleCache.GetWithLoader`
-  is singleflighted), and the load runs detached from the request context with a one-minute bound,
-  so a cancelled request or hung plugin can't fail or pin the load for other waiters.
-  Follow-up: tracks whose only lyrics are sidecar/plugin-sourced show no `HasLyrics` badge in
-  lists (request-time sources can't be known at list time without per-row I/O).
+- **流派是全局的。** `GET Genres`/`MusicGenres` 不限定于当前用户的媒体库（在 Navidrome 的模型中，流派标签不是按媒体库划分的实体）。
+- **艺人的条目访问依赖于列表时的范围限定。** 与专辑和歌曲（它们各自恰好属于一个媒体库，并且在每次获取时都会对照 `user.HasLibraryAccess` 进行检查）不同，一个艺人可以通过 `library_artist` 拥有跨多个媒体库的内容，因此没有单一的媒体库 id 可用于对直接的 `GET Items/{artistId}` 或收藏/评分调用进行把关。对艺人的访问控制是通过将 `Artists`/`Items?IncludeItemTypes=MusicArtist` *列表*限定到用户媒体库，再加上持久层的纵深防御来强制实现的；已经从别处获得艺人 id 的客户端不会重新对照媒体库成员资格进行检查。
+- **模糊哈希（Blurhash）是合成的，而不是根据封面计算的（待跟进）。** `ImageBlurHashes` 由 `dto/blurhash.go` 填充，它通过对条目 id 进行哈希，推导出一个格式正确的**单分量（纯色）**模糊哈希——它从不查看实际图片。真正的 Jellyfin 会在扫描时根据封面的像素（缩小到 128×128）计算一次多分量模糊哈希，并按图片存储，因此其占位图大致近似于封面。我们的实现满足协议要求（Finamp 能获得一个有效值，用作去重键和占位图，不会出现缺少模糊哈希的警告），但在封面加载期间渲染为纯色。正确的实现应在 `core/artwork` 流水线（图片已在那里解码）中计算真实的模糊哈希，像封面一样按键缓存，并让映射器读取它——同时保留合成值作为尚未渲染封面的回退。
+- **WebSocket 只做保活；它不推送任何事件（待跟进）。** `GET socket` 发送 `ForceKeepAlive` 并应答 `KeepAlive` ping，使实时客户端（Finamp）能进入一个可用的会话，而不是陷入 404 循环重连，但它从不推送任何内容。后续工作将（通过 `server/events`）在其上广播真实的会话/播放状态和媒体库变更事件，与 Jellyfin 的会话消息一致。
+- **歌词。** `GET Audio/{id}/Lyrics` 将主歌词轨道作为 `LyricDto` 提供（`Start` 以 100ns 刻度计，存在时还有词级 `Cues`），通过完整的 `core/lyrics` 流水线（内嵌、`.lrc` sidecar、按 `LyricsPriority` 的插件）解析，并置于 5 分钟 TTL 缓存之后，该缓存也会缓存未命中——Jellify 为每首播放的曲目获取歌词，Feishin 则按歌曲切换获取，因此无歌词的曲目是热路径。没有歌词 → 404（绝不会是空 200），三个客户端都能优雅降级。Finamp 通过 `Lyric` `MediaStream` 来开启其歌词视图（而不是 `HasLyrics`，那只是一个列表徽章）：浏览列表仅从内嵌歌词来通告它（`"[]"` 哨兵检查——该列在扫描后绝不会是 `""`），而 `PlaybackInfo` 会为每首曲目运行完整流水线，因此 sidecar/插件歌词也能点亮。Feishin 还要求服务器版本 ≥ 10.9——这就是 `jellyfinVersion` 为 10.9.11 的原因。同一曲目的并发未命中会共享一次流水线调用（`SimpleCache.GetWithLoader` 是单飞（singleflight）的），并且加载会脱离请求上下文运行，带有一分钟的时限，因此被取消的请求或挂起的插件无法使加载失败或拖住其他等待者。后续工作：只有 sidecar/插件来源歌词的曲目在列表中不会显示 `HasLyrics` 徽章（在列表时无法在不知道每行 I/O 的情况下获知请求时的来源）。

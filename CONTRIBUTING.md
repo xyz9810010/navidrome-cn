@@ -1,84 +1,81 @@
-# Navidrome Contribution Guide
+# Navidrome 贡献指南
 
-Navidrome is a streaming service which allows you to enjoy your music collection from anywhere. We'd welcome you to contribute to our open source project and make Navidrome even better. There are some basic guidelines which you need to follow if you like to contribute to Navidrome.
+Navidrome 是一个流媒体服务，让你可以随时随地欣赏自己的音乐收藏。我们欢迎你为这个开源项目做出贡献，让 Navidrome 变得更好。如果你想为 Navidrome 做贡献，需要遵循以下一些基本准则。
 
-- [Asking Support Questions](#asking-support-questions)
-- [Code of Conduct](#code-of-conduct)
-- [Issues](#issues)
-- [Pull Requests](#pull-requests)
+- [提问支持性问题](#asking-support-questions)
+- [行为准则](#code-of-conduct)
+- [问题（Issues）](#issues)
+- [拉取请求（Pull Requests）](#pull-requests)
 
 
-## Asking Support Questions
-We have an active [discussion forum](https://github.com/navidrome/navidrome/discussions) where users and developers can ask questions. Please don't use the GitHub issue tracker to ask questions.
+## 提问支持性问题
+我们有一个活跃的[讨论论坛](https://github.com/navidrome/navidrome/discussions)，用户和开发者都可以在那里提问。请不要使用 GitHub 的 issue 跟踪器来提问。
 
-## Code of Conduct
-Please read the following [Code of Conduct](https://github.com/navidrome/navidrome/blob/master/CODE_OF_CONDUCT.md).
+## 行为准则
+请阅读以下[行为准则](https://github.com/navidrome/navidrome/blob/master/CODE_OF_CONDUCT.md)。
 
-## Issues
-Found any issue or bug in our codebase? Have a great idea you want to propose or discuss with 
-the developers? You can help by submitting an [issue](https://github.com/navidrome/navidrome/issues/new/choose)
-to the GitHub repository. 
+## 问题（Issues）
+在我们的代码库中发现了问题或 bug？有一个想提出或与开发者讨论的绝妙想法？你可以通过向 GitHub 仓库提交一个 [issue](https://github.com/navidrome/navidrome/issues/new/choose) 来提供帮助。
 
-**Before opening a new issue, please check if the issue has not been already made by searching 
-the [issues](https://github.com/navidrome/navidrome/issues)**
+**在新建 issue 之前，请先通过搜索 [issues](https://github.com/navidrome/navidrome/issues) 检查该问题是否已经被提出过**
 
-## Pull requests
-Before submitting a pull request, ensure that you go through the following:
-- Open a corresponding issue for the Pull Request, if not existing. The issue can be opened following [these guidelines](#issues)
-- Ensure that there is no open or closed Pull Request corresponding to your submission to avoid duplication of effort.
-- Setup the [development environment](https://www.navidrome.org/docs/developers/dev-environment/)
-- Create a new branch on your forked repo and make the changes in it. Naming conventions for branch are: `<Issue Title>/<Issue Number>`. Example:
+## 拉取请求（Pull requests）
+在提交拉取请求之前，请确保你完成以下事项：
+- 如果尚不存在，为该拉取请求打开一个对应的 issue。可以按照[这些准则](#issues)来创建 issue
+- 确保没有与你提交内容对应的、已打开或已关闭的拉取请求，以避免重复劳动。
+- 搭建[开发环境](https://www.navidrome.org/docs/developers/dev-environment/)
+- 在你 fork 的仓库上创建一个新分支，并在其中进行修改。分支的命名约定为：`<Issue 标题>/<Issue 编号>`。示例：
 ```
     git checkout -b adding-docs/834 master
 ```
-- The commits should follow a [specific convention](#commit-conventions)
-- Ensure that a DCO sign-off for commits is provided via `--signoff` option of git commit
-- Provide a link to the issue that will be closed via your Pull request.
+- 提交信息应遵循[特定约定](#commit-conventions)
+- 确保通过 git commit 的 `--signoff` 选项为提交提供 DCO 签署
+- 提供将通过你的拉取请求关闭的 issue 链接。
 
-### Commit Conventions
-Each commit message must adhere to the following format:
+### 提交约定
+每条提交信息都必须遵循以下格式：
 ```
 <type>(scope): <description>
 
 [optional body]
 ```
-This improves the readability of the messages
+这样可以提高信息的可读性
 
-#### Type
-It can be one of the following:
-1. **feat**: Addition of a new feature
-2. **fix**: Bug fix
-3. **sec**: Fixing security issues
-4. **docs**: Documentation Changes
-5. **style**: Changes to styling
-6. **refactor**: Refactoring of code
-7. **perf**: Code that affects performance
-8. **test**: Updating or improving the current tests
-9. **build**: Changes to Build process
-10. **revert**: Reverting to a previous commit
-11. **chore** : updating grunt tasks etc
+#### 类型（Type）
+它可以是以下之一：
+1. **feat**：新增一项新功能
+2. **fix**：修复 bug
+3. **sec**：修复安全问题
+4. **docs**：文档变更
+5. **style**：样式变更
+6. **refactor**：代码重构
+7. **perf**：影响性能的代码
+8. **test**：更新或改进现有测试
+9. **build**：构建流程的变更
+10. **revert**：回退到之前的提交
+11. **chore**：更新 grunt 任务等
 
-If there is a breaking change in your Pull Request, please add `BREAKING CHANGE` in the optional body section
+如果你的拉取请求中存在破坏性变更，请在可选的正文部分添加 `BREAKING CHANGE`
 
-#### Scope
-The file or folder where the changes are made. If there are more than one, you can mention any
+#### 范围（Scope）
+进行更改的文件或文件夹。如果不止一个，你可以任选其一提及
 
-#### Description
-A short description of the issue
+#### 描述（Description）
+对问题的简短描述
 
-#### Issue number
-The issue fixed by this Pull Request.
+#### Issue 编号
+由此拉取请求修复的 issue。
 
-The body is optional. It may contain short description of changes made.
+正文是可选的。它可以包含对所进行更改的简短描述。
 
-Following all the guidelines an ideal commit will look like:
+遵循以上所有准则后，一条理想的提交看起来会是：
 ```
     git commit --signoff -m "feat(themes): New-theme - #834"
 ```
 
-After committing, push your commits to your forked branch and create a Pull Request from there.
-The Pull Request Title can be the same as `<type>(scope): <description> - <issue number>`
-A demo layout of how the Pull request body can look:
+提交后，将你的提交推送到你 fork 的分支，并从那里创建一个拉取请求。
+拉取请求的标题可以与 `<type>(scope): <description> - <issue number>` 相同
+拉取请求正文的一种示例布局如下：
 ```
 Closes <Issue number along with link>
 

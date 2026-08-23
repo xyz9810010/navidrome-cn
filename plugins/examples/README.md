@@ -1,37 +1,37 @@
-# Navidrome Plugin Examples
+# Navidrome 插件示例
 
-This folder contains example plugins demonstrating various capabilities and languages supported by Navidrome's plugin system.
+此文件夹包含多个示例插件，展示了 Navidrome 插件系统支持的各种能力和语言。
 
-## Available Examples
+## 可用示例
 
-| Plugin                                                | Language | Capabilities                                    | Description                    |
+| 插件                                                | 语言 | 能力                                    | 描述                    |
 |-------------------------------------------------------|----------|-------------------------------------------------|--------------------------------|
-| [minimal](minimal/)                                   | Go       | MetadataAgent                                   | Basic plugin structure         |
-| [wikimedia](wikimedia/)                               | Go       | MetadataAgent                                   | Wikidata/Wikipedia metadata    |
-| [crypto-ticker](crypto-ticker/)                       | Go       | Scheduler, WebSocket, Cache                     | Real-time crypto prices (demo) |
+| [minimal](minimal/)                                   | Go       | MetadataAgent                                   | 基本插件结构         |
+| [wikimedia](wikimedia/)                               | Go       | MetadataAgent                                   | Wikidata/Wikipedia 元数据    |
+| [crypto-ticker](crypto-ticker/)                       | Go       | Scheduler、WebSocket、Cache                     | 实时加密货币价格（演示） |
 | [coverartarchive-py](coverartarchive-py/)             | Python   | MetadataAgent                                   | Cover Art Archive              |
-| [nowplaying-py](nowplaying-py/)                       | Python   | Scheduler, SubsonicAPI                          | Now playing logger             |
-| [webhook-rs](webhook-rs/)                             | Rust     | Scrobbler                                       | HTTP webhook on scrobble       |
-| [library-inspector-rs](library-inspector-rs/)         | Rust     | Library, Scheduler                              | Periodic library stats logging |
-| [discord-rich-presence-rs](discord-rich-presence-rs/) | Rust     | Scrobbler, Scheduler, WebSocket, Cache, Artwork | Discord integration (Rust)     |
+| [nowplaying-py](nowplaying-py/)                       | Python   | Scheduler、SubsonicAPI                          | 正在播放记录器             |
+| [webhook-rs](webhook-rs/)                             | Rust     | Scrobbler                                       | scrobble 时的 HTTP webhook       |
+| [library-inspector-rs](library-inspector-rs/)         | Rust     | Library、Scheduler                              | 定期媒体库统计日志 |
+| [discord-rich-presence-rs](discord-rich-presence-rs/) | Rust     | Scrobbler、Scheduler、WebSocket、Cache、Artwork | Discord 集成（Rust）     |
 
-## Building
+## 构建
 
-### Prerequisites
+### 前置条件
 
-- **Go plugins:** [TinyGo](https://tinygo.org/getting-started/install/) 0.30+
-- **Python plugins:** [extism-py](https://github.com/extism/python-pdk)
-- **Rust plugins:** [Rust](https://rustup.rs/) with `wasm32-unknown-unknown` target
+- **Go 插件：** [TinyGo](https://tinygo.org/getting-started/install/) 0.30+
+- **Python 插件：** [extism-py](https://github.com/extism/python-pdk)
+- **Rust 插件：** [Rust](https://rustup.rs/) 以及 `wasm32-unknown-unknown` target
 
-### Build All Plugins
+### 构建所有插件
 
 ```bash
 make all
 ```
 
-This creates `.ndp` package files for each plugin.
+这会为每个插件创建 `.ndp` 包文件。
 
-### Build Individual Plugin
+### 构建单个插件
 
 ```bash
 make minimal.ndp
@@ -39,17 +39,17 @@ make wikimedia.ndp
 make discord-rich-presence-rs.ndp
 ```
 
-### Clean
+### 清理
 
 ```bash
 make clean
 ```
 
-## Testing Plugins
+## 测试插件
 
-### With Extism CLI
+### 使用 Extism CLI
 
-Test any plugin without running Navidrome. First extract the `.wasm` file from the `.ndp` package:
+无需运行 Navidrome 即可测试任何插件。首先从 `.ndp` 包中提取 `.wasm` 文件：
 
 ```bash
 # Install: https://extism.org/docs/install
@@ -62,7 +62,7 @@ extism call minimal.wasm nd_get_artist_biography --wasi \
   --input '{"id":"1","name":"The Beatles"}'
 ```
 
-For plugins that make HTTP requests, allow the hosts:
+对于发起 HTTP 请求的插件，需要允许这些主机：
 
 ```bash
 unzip -p wikimedia.ndp plugin.wasm > wikimedia.wasm
@@ -72,25 +72,25 @@ extism call wikimedia.wasm nd_get_artist_biography --wasi \
   --allow-host "en.wikipedia.org"
 ```
 
-### With Navidrome
+### 使用 Navidrome
 
-1. Copy the `.ndp` file to your plugins folder
-2. Enable plugins in `navidrome.toml`:
+1. 将 `.ndp` 文件复制到你的插件文件夹
+2. 在 `navidrome.toml` 中启用插件：
    ```toml
    [Plugins]
    Enabled = true
    Folder = "/path/to/plugins"
    ```
-3. For metadata agents, add to your agents list:
+3. 对于元数据代理，将其添加到你的代理列表中：
    ```toml
    Agents = "lastfm,spotify,wikimedia"
    ```
 
-## Creating Your Own Plugin
+## 创建你自己的插件
 
-### Option 1: Start from Minimal
+### 方式 1：从 Minimal 开始
 
-Copy the [minimal](minimal/) example and modify:
+复制 [minimal](minimal/) 示例并修改：
 
 ```bash
 cp -r minimal my-plugin
@@ -100,9 +100,9 @@ tinygo build -o plugin.wasm -target wasip1 -buildmode=c-shared .
 zip -j my-plugin.ndp manifest.json plugin.wasm
 ```
 
-### Option 2: Bootstrap with XTP CLI
+### 方式 2：使用 XTP CLI 引导
 
-Generate boilerplate from a schema:
+从模式生成样板代码：
 
 ```bash
 # Install XTP: https://docs.xtp.dylibso.com/docs/cli
@@ -119,62 +119,62 @@ xtp plugin build
 zip -j my-plugin.ndp manifest.json dist/plugin.wasm
 ```
 
-Available schemas in [../schemas/](../schemas/):
-- `metadata_agent.yaml` – Artist/album metadata
-- `scrobbler.yaml` – Scrobbling integration
-- `lifecycle.yaml` – Init callbacks
-- `scheduler_callback.yaml` – Scheduled tasks
-- `websocket_callback.yaml` – WebSocket events
+[../schemas/](../schemas/) 中可用的模式：
+- `metadata_agent.yaml` – 艺人/专辑元数据
+- `scrobbler.yaml` – Scrobbling 集成
+- `lifecycle.yaml` – 初始化回调
+- `scheduler_callback.yaml` – 定时任务
+- `websocket_callback.yaml` – WebSocket 事件
 
-### Option 3: Different Language
+### 方式 3：使用不同语言
 
-See language-specific examples:
-- **Python:** [coverartarchive-py](coverartarchive-py/)
-- **Rust:** [webhook-rs](webhook-rs/)
+参见各语言的具体示例：
+- **Python：** [coverartarchive-py](coverartarchive-py/)
+- **Rust：** [webhook-rs](webhook-rs/)
 
-## Example Breakdown
+## 示例详解
 
-### Minimal (Go)
+### Minimal（Go）
 
-The simplest possible plugin. Shows:
-- Manifest export
-- Single capability function
-- Basic input/output handling
+尽可能最简单的插件。展示：
+- Manifest 导出
+- 单个能力函数
+- 基本的输入/输出处理
 
-### Wikimedia (Go)
+### Wikimedia（Go）
 
-Real-world metadata agent. Shows:
-- HTTP requests to external APIs
-- SPARQL queries (Wikidata)
-- Error handling
-- Host allowlisting
+真实世界的元数据代理。展示：
+- 对外部 API 的 HTTP 请求
+- SPARQL 查询（Wikidata）
+- 错误处理
+- 主机允许列表
 
-### Discord Rich Presence (Go)
+### Discord Rich Presence（Go）
 
-Complex multi-capability plugin. Shows:
-- **Scrobbler** – Receives play events
-- **WebSocket** – Maintains Discord gateway connection
-- **Scheduler** – Heartbeat and timeout management
-- **Cache** – Connection state storage
-- **Artwork** – Getting album art URLs
+复杂的多能力插件。展示：
+- **Scrobbler** – 接收播放事件
+- **WebSocket** – 维持 Discord 网关连接
+- **Scheduler** – 心跳和超时管理
+- **Cache** – 连接状态存储
+- **Artwork** – 获取专辑封面 URL
 
-### Cover Art Archive (Python)
+### Cover Art Archive（Python）
 
-Python metadata agent. Shows:
-- extism-py plugin structure
-- HTTP requests
-- JSON handling
+Python 元数据代理。展示：
+- extism-py 插件结构
+- HTTP 请求
+- JSON 处理
 
-### Webhook (Rust)
+### Webhook（Rust）
 
-Rust scrobbler. Shows:
-- extism-rs plugin structure
-- HTTP POST requests
-- Minimal dependencies
+Rust scrobbler。展示：
+- extism-rs 插件结构
+- HTTP POST 请求
+- 最小化依赖
 
-## Resources
+## 资源
 
-- [Plugin System Documentation](../README.md)
-- [Extism PDK Docs](https://extism.org/docs/concepts/pdk)
+- [插件系统文档](../README.md)
+- [Extism PDK 文档](https://extism.org/docs/concepts/pdk)
 - [TinyGo WebAssembly](https://tinygo.org/docs/guides/webassembly/)
 - [XTP CLI](https://docs.xtp.dylibso.com/docs/cli)

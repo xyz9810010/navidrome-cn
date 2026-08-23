@@ -1,38 +1,38 @@
-### Description
-<!-- Please provide a clear and concise description of what this PR does and why it is needed. -->
+### 描述（Description）
+<!-- 请清晰、简洁地描述此 PR 做了什么以及为什么需要它。 -->
 
-### Related Issues
-<!-- List any related issues, e.g., "Fixes #123" or "Related to #456". -->
+### 相关问题（Related Issues）
+<!-- 列出所有相关问题，例如 “Fixes #123” 或 “Related to #456”。 -->
 
-### Type of Change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Documentation update
-- [ ] Refactor
-- [ ] Other (please describe):
+### 变更类型（Type of Change）
+- [ ] Bug 修复
+- [ ] 新功能
+- [ ] 文档更新
+- [ ] 重构
+- [ ] 其他（请描述）：
 
-### Checklist
-Please review and check all that apply:
+### 检查清单（Checklist）
+请检查并勾选所有适用的项：
 
-- [ ] My code follows the project’s coding style
-- [ ] I have tested the changes locally
-- [ ] I have added or updated documentation as needed
-- [ ] I have added tests that prove my fix/feature works (or explain why not)
-- [ ] All existing and new tests pass
+- [ ] 我的代码遵循项目的编码风格
+- [ ] 我已在本地测试这些更改
+- [ ] 我已根据需要添加或更新文档
+- [ ] 我已添加证明我的修复/功能有效的测试（或说明为何没有添加）
+- [ ] 所有现有测试和新测试均已通过
 
-### How to Test
-<!-- Describe the steps to test your changes. Include setup, commands, and expected results. -->
+### 如何测试（How to Test）
+<!-- 描述测试你的更改的步骤。包括环境准备、命令和预期结果。 -->
 
-### Screenshots / Demos (if applicable)
-<!-- Add screenshots, GIFs, or links to demos if your change includes UI updates or visual changes. -->
+### 截图 / 演示（Screenshots / Demos，如适用）
+<!-- 如果你的更改涉及 UI 更新或视觉变更，请添加截图、GIF 或演示链接。 -->
 
-### Additional Notes
-<!-- Anything else the maintainer should know? Potential side effects, breaking changes, or areas of concern? -->
+### 补充说明（Additional Notes）
+<!-- 维护者还需要了解什么？是否有潜在的副作用、破坏性变更或需要关注的地方？ -->
 
 <!-- 
-**Tips for Contributors:**
-- Be concise but thorough.
-- If your PR is large, consider breaking it into smaller PRs.
-- Tag the maintainer if you need a prompt review.
-- Avoid force pushing to the branch after opening the PR, as it can complicate the review process.
+**给贡献者的提示：**
+- 要简洁但详尽。
+- 如果你的 PR 很大，可以考虑将其拆分为更小的 PR。
+- 如果需要尽快得到审查，请 @ 维护者。
+- 在打开 PR 之后，避免向分支强制推送，因为这会使审查过程复杂化。
 -->

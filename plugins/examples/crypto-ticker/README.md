@@ -1,36 +1,36 @@
-# Crypto Ticker Plugin
+# 加密货币行情插件
 
-This is a WebSocket-based WASM plugin for Navidrome that displays real-time cryptocurrency prices from Coinbase.
+这是一个面向 Navidrome 的基于 WebSocket 的 WASM 插件，用于显示来自 Coinbase 的实时加密货币价格。
 
-## Features
+## 功能
 
-- Connects to Coinbase WebSocket API to receive real-time ticker updates
-- Configurable to track multiple cryptocurrency pairs
-- Implements WebSocket callback handlers for message processing
-- Automatically reconnects on connection loss using the scheduler service
-- Displays price, best bid, best ask, and 24-hour percentage change
+- 连接 Coinbase WebSocket API 以接收实时行情更新
+- 可配置跟踪多个加密货币交易对
+- 实现用于消息处理的 WebSocket 回调处理器
+- 使用 scheduler 服务在连接断开时自动重连
+- 显示价格、最佳买价、最佳卖价和 24 小时涨跌幅
 
-## Configuration
+## 配置
 
-Configure in the Navidrome UI (Settings → Plugins → crypto-ticker):
+在 Navidrome UI 中配置（设置 → 插件 → crypto-ticker）：
 
-| Key       | Description                                                          | Default   |
+| 键       | 描述                                                          | 默认   |
 |-----------|----------------------------------------------------------------------|-----------|
-| `tickers` | Comma-separated list of cryptocurrency symbols (e.g., `BTC,ETH,SOL`) | `BTC,ETH` |
+| `tickers` | 逗号分隔的加密货币符号列表（例如 `BTC,ETH,SOL`） | `BTC,ETH` |
 
-The plugin will append `-USD` to any symbol without a trading pair specified.
+插件会为任何未指定交易对的符号追加 `-USD`。
 
-## How it Works
+## 工作原理
 
-1. On plugin initialization, connects to Coinbase's WebSocket API
-2. Subscribes to ticker updates for the configured cryptocurrencies
-3. Incoming ticker data is processed via `nd_websocket_on_text_message` callback
-4. On connection loss, schedules a reconnection attempt via the scheduler service
-5. Reconnection is attempted until successful
+1. 插件初始化时，连接 Coinbase 的 WebSocket API
+2. 订阅所配置加密货币的行情更新
+3. 传入的行情数据通过 `nd_websocket_on_text_message` 回调处理
+4. 连接断开时，通过 scheduler 服务安排重连尝试
+5. 重连会持续尝试直到成功
 
-## Building
+## 构建
 
-To build the plugin and package as `.ndp`:
+构建插件并打包为 `.ndp`：
 
 ```bash
 # Using TinyGo (recommended - smaller binary)
@@ -38,17 +38,17 @@ tinygo build -o plugin.wasm -target wasip1 -buildmode=c-shared .
 zip -j crypto-ticker.ndp manifest.json plugin.wasm
 ```
 
-Or from the `plugins/examples/` directory:
+或从 `plugins/examples/` 目录：
 
 ```bash
 make crypto-ticker.ndp
 ```
 
-## Installation
+## 安装
 
-Copy the resulting `crypto-ticker.ndp` to your Navidrome plugins folder.
+将生成的 `crypto-ticker.ndp` 复制到你的 Navidrome 插件文件夹。
 
-## Example Output
+## 示例输出
 
 ```
 [Crypto] Crypto Ticker Plugin initializing...
@@ -60,20 +60,20 @@ Copy the resulting `crypto-ticker.ndp` to your Navidrome plugins folder.
 [Crypto] 💰 ETH-USD: $3456.78 (24h: -0.54%) Bid: $3455.90 Ask: $3457.80
 ```
 
-## Permissions Required
+## 所需权限
 
-- **config**: Read ticker symbols configuration
-- **websocket**: Connect to `ws-feed.exchange.coinbase.com`
-- **scheduler**: Schedule reconnection attempts
+- **config**：读取行情符号配置
+- **websocket**：连接 `ws-feed.exchange.coinbase.com`
+- **scheduler**：安排重连尝试
 
-## Files
+## 文件
 
-- `main.go` - Main plugin implementation
-- `go.mod` - Go module file
+- `main.go` - 主插件实现
+- `go.mod` - Go 模块文件
 
 ## PDK
 
-This plugin imports the Navidrome PDK subpackages directly:
+此插件直接导入 Navidrome PDK 子包：
 
 ```go
 import (
@@ -84,8 +84,8 @@ import (
 )
 ```
 
-The `go.mod` file uses `replace` directives to point to the local packages for development.
+`go.mod` 文件使用 `replace` 指令指向本地包以方便开发。
 
 ---
 
-For more details, see the source code in `main.go`.
+更多细节请参阅 `main.go` 中的源代码。

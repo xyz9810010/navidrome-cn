@@ -1,57 +1,57 @@
-# Cover Art Archive Plugin (Python)
+# Cover Art Archive 插件（Python）
 
-A Python example plugin that fetches album cover images from the [Cover Art Archive](https://coverartarchive.org/) API using the MusicBrainz Release MBID.
+一个 Python 示例插件，使用 MusicBrainz Release MBID 从 [Cover Art Archive](https://coverartarchive.org/) API 获取专辑封面图片。
 
-## Features
+## 功能
 
-- Implements the `nd_get_album_images` method of the MetadataAgent plugin interface
-- Returns front cover images for a given release MBID
-- Returns `not found` if no MBID is provided or no images are found
-- Demonstrates Python plugin development for Navidrome
+- 实现 MetadataAgent 插件接口的 `nd_get_album_images` 方法
+- 返回给定 release MBID 的正面封面图片
+- 如果未提供 MBID 或未找到图片，返回 `not found`
+- 演示 Navidrome 的 Python 插件开发
 
-## Prerequisites
+## 前置条件
 
-- [extism-py](https://github.com/extism/python-pdk) - Python PDK compiler
+- [extism-py](https://github.com/extism/python-pdk) - Python PDK 编译器
   ```bash
   curl -Ls https://raw.githubusercontent.com/extism/python-pdk/main/install.sh | bash
   ```
 
-> **Note:** `extism-py` requires [Binaryen](https://github.com/WebAssembly/binaryen/) (`wasm-merge`, `wasm-opt`) to be installed.
+> **注意：** `extism-py` 需要安装 [Binaryen](https://github.com/WebAssembly/binaryen/)（`wasm-merge`、`wasm-opt`）。
 
-## Building
+## 构建
 
-From the `plugins/examples` directory:
+在 `plugins/examples` 目录下：
 
 ```bash
 make coverartarchive-py.ndp
 ```
 
-Or directly:
+或直接构建：
 
 ```bash
 extism-py plugin/__init__.py -o plugin.wasm
 zip -j coverartarchive-py.ndp manifest.json plugin.wasm
 ```
 
-## Installation
+## 安装
 
-1. Copy `coverartarchive-py.ndp` to your Navidrome plugins folder
+1. 将 `coverartarchive-py.ndp` 复制到你的 Navidrome 插件文件夹
 
-2. Enable plugins in `navidrome.toml`:
+2. 在 `navidrome.toml` 中启用插件：
    ```toml
    [Plugins]
    Enabled = true
    Folder = "/path/to/plugins"
    ```
 
-3. Add to your agents list:
+3. 将其添加到你的代理列表：
    ```toml
    Agents = "coverartarchive-py,spotify,lastfm"
    ```
 
-## Testing
+## 测试
 
-Extract the wasm file and test:
+提取 wasm 文件并测试：
 
 ```bash
 unzip -p coverartarchive-py.ndp plugin.wasm > coverartarchive-py.wasm
@@ -60,14 +60,14 @@ extism call coverartarchive-py.wasm nd_get_album_images --wasi \
   --allow-host "coverartarchive.org" --allow-host "archive.org"
 ```
 
-## How It Works
+## 工作原理
 
-1. **Album Image Request (`nd_get_album_images`)**: Receives album metadata including the MusicBrainz Release MBID.
+1. **专辑图片请求（`nd_get_album_images`）**：接收包含 MusicBrainz Release MBID 的专辑元数据。
 
-2. **API Query**: Fetches cover art metadata from `https://coverartarchive.org/release/{mbid}`.
+2. **API 查询**：从 `https://coverartarchive.org/release/{mbid}` 获取封面元数据。
 
-3. **Response**: Returns the front cover image URL if found.
+3. **响应**：如果找到，返回正面封面图片 URL。
 
-## API Reference
+## API 参考
 
 - [Cover Art Archive API](https://musicbrainz.org/doc/Cover_Art_Archive/API)

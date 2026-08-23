@@ -1,57 +1,57 @@
-# Discord Rich Presence Plugin (Rust)
+# Discord Rich Presence 插件（Rust）
 
-A Navidrome plugin that displays your currently playing track on Discord using Rich Presence. This is the Rust implementation demonstrating how to use the `nd-pdk` library.
+一个 Navidrome 插件，使用 Rich Presence 在 Discord 上显示你当前正在播放的曲目。这是 Rust 实现，演示如何使用 `nd-pdk` 库。
 
-## ⚠️ Warning
+## ⚠️ 警告
 
-This plugin is for **demonstration purposes only**. It requires storing your Discord token in the Navidrome configuration file, which:
+此插件**仅用于演示**。它要求在 Navidrome 配置文件中存储你的 Discord token，这：
 
-1. Is not secure (tokens should never be stored in plain text)
-2. May violate Discord's Terms of Service
+1. 不安全（token 绝不应以明文存储）
+2. 可能违反 Discord 的服务条款
 
-**Use at your own risk.**
+**使用风险自负。**
 
-## Features
+## 功能
 
-- Shows currently playing track on Discord Rich Presence
-- Displays album artwork
-- Shows track progress with start/end timestamps
-- Automatically clears presence when track finishes
-- Supports multiple users
+- 在 Discord Rich Presence 上显示当前正在播放的曲目
+- 显示专辑封面
+- 以开始/结束时间戳显示曲目进度
+- 曲目结束时自动清除 presence
+- 支持多个用户
 
-## Capabilities
+## 能力
 
-This plugin implements multiple capabilities to demonstrate the nd-pdk library:
+此插件实现多项能力以演示 nd-pdk 库：
 
-- **Scrobbler**: Receives now-playing events from Navidrome
-- **SchedulerCallback**: Handles heartbeat and activity clearing timers
-- **WebSocketCallback**: Communicates with Discord gateway (text, binary, error, and close handlers)
+- **Scrobbler**：从 Navidrome 接收正在播放事件
+- **SchedulerCallback**：处理心跳和活动清除定时器
+- **WebSocketCallback**：与 Discord 网关通信（文本、二进制、错误和关闭处理器）
 
-## Configuration
+## 配置
 
-Configure in the Navidrome UI (Settings → Plugins → discord-rich-presence-rs):
+在 Navidrome UI 中配置（设置 → 插件 → discord-rich-presence-rs）：
 
-| Key           | Description                          | Example                   |
+| 键           | 描述                          | 示例                   |
 |---------------|--------------------------------------|---------------------------|
-| `clientid`    | Your Discord application ID          | `123456789012345678`      |
-| `user.<name>` | Discord token for the specified user | `user.alice` = `token123` |
+| `clientid`    | 你的 Discord 应用 ID          | `123456789012345678`      |
+| `user.<name>` | 指定用户的 Discord token | `user.alice` = `token123` |
 
-Each user is configured as a separate key with the `user.` prefix.
+每个用户都使用 `user.` 前缀作为独立的键进行配置。
 
 
-### Getting Configuration Values
+### 获取配置值
 
-1. **Client ID**: Create a Discord Application at https://discord.com/developers/applications and copy the Application ID
+1. **客户端 ID**：在 https://discord.com/developers/applications 创建 Discord 应用并复制应用 ID
 
-2. **Discord Token**: This requires extracting your user token from Discord (not recommended for security reasons)
+2. **Discord Token**：这需要从 Discord 提取你的用户 token（出于安全原因不推荐）
 
-3. **Multiple Users**: Add multiple user keys:
+3. **多个用户**：添加多个用户键：
    ```properties
    user.user1 = "token1"
    user.user2 = "token2"
    ```
 
-## Building
+## 构建
 
 ```bash
 # From the plugins/examples directory
@@ -62,16 +62,16 @@ make discord-rich-presence-rs.ndp
 # - plugin.wasm
 ```
 
-## Installation
+## 安装
 
-1. Build the plugin using the command above
-2. Copy the `.ndp` file to your Navidrome plugins directory
-3. Enable and configure the plugin in the Navidrome UI (Settings → Plugins)
-4. Restart Navidrome if needed
+1. 使用上述命令构建插件
+2. 将 `.ndp` 文件复制到你的 Navidrome 插件目录
+3. 在 Navidrome UI 中启用并配置插件（设置 → 插件）
+4. 如有需要，重启 Navidrome
 
-## Using nd-pdk Library
+## 使用 nd-pdk 库
 
-This plugin demonstrates how to use the Rust plugin development kit:
+此插件演示如何使用 Rust 插件开发套件：
 
 ```rust
 use nd_pdk::host::{artwork, cache, scheduler, websocket};
@@ -95,6 +95,6 @@ let conn_id = websocket::connect("wss://example.com/socket", HashMap::new(), "my
 websocket::send_text(&conn_id, "Hello")?;
 ```
 
-## License
+## 许可证
 
 GPL-3.0

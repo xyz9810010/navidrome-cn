@@ -1,19 +1,19 @@
-# Navidrome Plugin Development Kit for Rust
+# Navidrome Rust 插件开发套件
 
-This directory contains the Rust PDK crates for building Navidrome plugins.
+此目录包含用于构建 Navidrome 插件的 Rust PDK crate。
 
-## Crate Structure
+## Crate 结构
 
 ```
 plugins/pdk/rust/
-├── nd-pdk/              # Umbrella crate - use this as your dependency
-├── nd-pdk-host/         # Host function wrappers (call Navidrome services)
-└── nd-pdk-capabilities/ # Capability traits and types (generated)
+├── nd-pdk/              # 汇总 crate - 将其作为你的依赖使用
+├── nd-pdk-host/         # 宿主函数包装器（调用 Navidrome 服务）
+└── nd-pdk-capabilities/ # 能力 trait 和类型（生成）
 ```
 
-## Usage
+## 用法
 
-Add the `nd-pdk` crate as a dependency in your plugin's `Cargo.toml`:
+在插件的 `Cargo.toml` 中将 `nd-pdk` crate 添加为依赖：
 
 ```toml
 [package]
@@ -28,9 +28,9 @@ nd-pdk = { path = "../../pdk/rust/nd-pdk" }
 extism-pdk = "1.2"
 ```
 
-### Implementing a Scrobbler (Required-All Pattern)
+### 实现 Scrobbler（全部必需模式）
 
-The Scrobbler capability requires all methods to be implemented:
+Scrobbler 能力要求实现所有方法：
 
 ```rust
 use nd_pdk::scrobbler::{
@@ -61,9 +61,9 @@ impl Scrobbler for MyPlugin {
 }
 ```
 
-### Implementing Metadata Agent (Optional Pattern)
+### 实现元数据代理（可选模式）
 
-The MetadataAgent capability allows implementing individual methods:
+MetadataAgent 能力允许实现单个方法：
 
 ```rust
 use nd_pdk::metadata::{
@@ -89,9 +89,9 @@ impl ArtistBiographyProvider for MyPlugin {
 }
 ```
 
-### Using Host Services
+### 使用宿主服务
 
-Access Navidrome services via the host module:
+通过 host 模块访问 Navidrome 服务：
 
 ```rust
 use nd_pdk::host::{artwork, scheduler, library};
@@ -106,40 +106,40 @@ scheduler::schedule_one_time(60, "my-payload", "schedule-id")?;
 let libs = library::get_all()?;
 ```
 
-## Available Capabilities
+## 可用的能力
 
-| Capability  | Pattern      | Description                                         |
+| 能力  | 模式      | 描述                                         |
 |-------------|--------------|-----------------------------------------------------|
-| `scrobbler` | Required-all | Submit listening history to external services       |
-| `metadata`  | Optional     | Provide artist/album metadata from external sources |
-| `lifecycle` | Optional     | Handle plugin initialization                        |
-| `scheduler` | Optional     | Receive scheduled callbacks                         |
-| `websocket` | Optional     | Handle WebSocket messages                           |
+| `scrobbler` | 全部必需 | 向外部服务提交收听历史       |
+| `metadata`  | 可选     | 从外部来源提供艺人/专辑元数据 |
+| `lifecycle` | 可选     | 处理插件初始化                        |
+| `scheduler` | 可选     | 接收定时回调                         |
+| `websocket` | 可选     | 处理 WebSocket 消息                           |
 
-## Building
+## 构建
 
-Rust plugins must be compiled to WASM using the `wasm32-wasip1` target:
+Rust 插件必须使用 `wasm32-wasip1` target 编译为 WASM：
 
 ```bash
 cargo build --release --target wasm32-wasip1
 ```
 
-The resulting `.wasm` file can be packaged into an `.ndp` plugin package.
+生成的 `.wasm` 文件可以打包为 `.ndp` 插件包。
 
-## Examples
+## 示例
 
-See the example plugins for complete implementations:
+完整的实现请参见示例插件：
 
-- [webhook-rs](../../examples/webhook-rs/) - Simple scrobbler using the PDK
-- [discord-rich-presence-rs](../../examples/discord-rich-presence-rs/) - Complex plugin with multiple capabilities
-- [library-inspector-rs](../../examples/library-inspector-rs/) - Host service demonstration
+- [webhook-rs](../../examples/webhook-rs/) - 使用 PDK 的简单 scrobbler
+- [discord-rich-presence-rs](../../examples/discord-rich-presence-rs/) - 具有多项能力的复杂插件
+- [library-inspector-rs](../../examples/library-inspector-rs/) - 宿主服务演示
 
-## Code Generation
+## 代码生成
 
-The capability modules in `nd-pdk-capabilities` are auto-generated from the Go capability definitions. To regenerate after capability changes:
+`nd-pdk-capabilities` 中的能力模块是从 Go 能力定义自动生成的。要在能力变更后重新生成：
 
 ```bash
 make gen
 ```
 
-This generates both Go and Rust PDK code.
+这会生成 Go 和 Rust 两种 PDK 代码。

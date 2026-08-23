@@ -1,29 +1,29 @@
-# Webhook Scrobbler Plugin (Rust)
+# Webhook Scrobbler 插件（Rust）
 
-A Navidrome plugin written in Rust that sends HTTP webhook notifications when tracks are scrobbled. This is useful for integrating with external services like home automation systems, Discord bots, monitoring tools, or any service that can receive HTTP requests.
+一个用 Rust 编写的 Navidrome 插件，在曲目被 scrobble 时发送 HTTP webhook 通知。它可用于集成外部服务，例如家庭自动化系统、Discord 机器人、监控工具，或任何能接收 HTTP 请求的服务。
 
-## Features
+## 功能
 
-- Sends HTTP GET requests to configured URLs on every scrobble event
-- Includes track metadata (title, artist, album, username, timestamp) as query parameters
-- Supports multiple webhook URLs (comma-separated)
-- All users are automatically authorized (no external service authentication required)
-- Now playing events are ignored (webhooks fire only on completed scrobbles)
+- 在每次 scrobble 事件时向配置的 URL 发送 HTTP GET 请求
+- 将曲目元数据（标题、艺人、专辑、用户名、时间戳）作为查询参数包含在内
+- 支持多个 webhook URL（逗号分隔）
+- 所有用户自动获得授权（无需外部服务认证）
+- 正在播放事件被忽略（webhook 仅在完成 scrobble 时触发）
 
-## Prerequisites
+## 前置条件
 
-- [Rust](https://rustup.rs/) toolchain
-- WebAssembly target: `rustup target add wasm32-unknown-unknown`
+- [Rust](https://rustup.rs/) 工具链
+- WebAssembly target：`rustup target add wasm32-unknown-unknown`
 
-## Building
+## 构建
 
-From the `plugins/examples` directory:
+在 `plugins/examples` 目录下：
 
 ```bash
 make webhook-rs.ndp
 ```
 
-Or build directly with cargo:
+或直接使用 cargo 构建：
 
 ```bash
 cd webhook-rs
@@ -31,47 +31,47 @@ cargo build --release
 zip -j webhook-rs.ndp manifest.json target/wasm32-unknown-unknown/release/webhook_rs.wasm
 ```
 
-## Installation
+## 安装
 
-Copy `webhook-rs.ndp` to your Navidrome plugins folder (configured via `Plugins.Folder` in your config).
+将 `webhook-rs.ndp` 复制到你的 Navidrome 插件文件夹（通过配置中的 `Plugins.Folder` 设置）。
 
-## Configuration
+## 配置
 
-Configure in the Navidrome UI (Settings → Plugins → webhook-rs):
+在 Navidrome UI 中配置（设置 → 插件 → webhook-rs）：
 
-| Key    | Description                          | Example                                                   |
+| 键    | 描述                          | 示例                                                   |
 |--------|--------------------------------------|-----------------------------------------------------------|
-| `urls` | Comma-separated list of webhook URLs | `https://example.com/hook1,https://example.com/hook2`     |
+| `urls` | 逗号分隔的 webhook URL 列表 | `https://example.com/hook1,https://example.com/hook2`     |
 
-## Webhook Request Format
+## Webhook 请求格式
 
-When a scrobble occurs, the plugin sends an HTTP GET request to each configured URL with the following query parameters:
+发生 scrobble 时，插件会向每个配置的 URL 发送 HTTP GET 请求，并带有以下查询参数：
 
-| Parameter   | Description                                   |
+| 参数   | 描述                                   |
 |-------------|-----------------------------------------------|
-| `title`     | Track title                                   |
-| `artist`    | Track artist                                  |
-| `album`     | Album name                                    |
-| `user`      | Username who scrobbled                        |
-| `timestamp` | Unix timestamp when the track started playing |
+| `title`     | 曲目标题                                   |
+| `artist`    | 曲目艺人                                  |
+| `album`     | 专辑名称                                    |
+| `user`      | 执行 scrobble 的用户名                        |
+| `timestamp` | 曲目开始播放时的 Unix 时间戳 |
 
-Example request:
+示例请求：
 ```
 GET https://example.com/webhook?title=Song%20Name&artist=Artist%20Name&album=Album%20Name&user=john&timestamp=1703270400
 ```
 
-## Use Cases
+## 用例
 
-- **Home Automation**: Trigger lights or displays when music starts playing
-- **Discord/Slack Notifications**: Post currently playing tracks to a channel
-- **Logging/Analytics**: Track listening history in an external system
-- **IFTTT/Zapier Integration**: Connect to thousands of services via webhook triggers
+- **家庭自动化**：音乐开始播放时触发灯光或显示器
+- **Discord/Slack 通知**：将当前正在播放的曲目发布到频道
+- **日志/分析**：在外部系统中跟踪收听历史
+- **IFTTT/Zapier 集成**：通过 webhook 触发器连接到成千上万的服务
 
-## Development
+## 开发
 
-The plugin is built using the [Extism Rust PDK](https://github.com/extism/rust-pdk). Key exports:
+此插件使用 [Extism Rust PDK](https://github.com/extism/rust-pdk) 构建。关键导出：
 
-- `nd_manifest` - Returns plugin metadata and permissions
-- `nd_scrobbler_is_authorized` - Always returns `true` (all users authorized)
-- `nd_scrobbler_now_playing` - No-op (returns success without action)
-- `nd_scrobbler_scrobble` - Sends webhooks to configured URLs
+- `nd_manifest` - 返回插件元数据和权限
+- `nd_scrobbler_is_authorized` - 始终返回 `true`（所有用户获得授权）
+- `nd_scrobbler_now_playing` - 空操作（返回成功但不执行任何操作）
+- `nd_scrobbler_scrobble` - 向配置的 URL 发送 webhook

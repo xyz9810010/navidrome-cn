@@ -1,12 +1,10 @@
-This folder abstracts metadata lookup into "agents". Each agent can be implemented to get as
-much info as the external source provides, by using a granular set of interfaces 
-(see [interfaces](interfaces.go)).
+此文件夹将元数据查找抽象为 "agent"。每个 agent 都可以通过使用一组细粒度的接口（参见 [interfaces](interfaces.go)）来实现，以获取外部数据源所提供的尽可能多的信息。
 
-A new agent must comply with these simple implementation rules:
-1) Implement the `AgentName()` method. It just returns the name of the agent for logging purposes.
-2) Implement one or more of the `*Retriever()` interfaces. That's where the agent's logic resides.
-3) Register itself  (in its `init()` function).
+新的 agent 必须遵循以下简单的实现规则：
+1) 实现 `AgentName()` 方法。它仅返回 agent 的名称，用于日志记录。
+2) 实现一个或多个 `*Retriever()` 接口。agent 的逻辑就位于其中。
+3) 在它的 `init()` 函数中注册自身。
 
-For an agent to be used it needs to be listed in the `Agents` config option (default is `"deezer,lastfm"`). The order dictates the priority of the agents
+一个 agent 要被使用，需要被列在 `Agents` 配置项中（默认是 `"deezer,lastfm"`）。顺序决定了 agent 的优先级。
 
-For a simple Agent example, look at the [local_agent](local_agent.go) agent source code.
+关于一个简单的 Agent 示例，请查看 [local_agent](local_agent.go) agent 的源代码。

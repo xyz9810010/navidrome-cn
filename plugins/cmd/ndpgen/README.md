@@ -1,31 +1,31 @@
 # ndpgen
 
-Navidrome Plugin Development Kit (PDK) code generator. It reads Go interface definitions with special annotations and generates client wrappers for WASM plugins.
+Navidrome 插件开发套件（PDK）代码生成器。它读取带有特殊注解的 Go 接口定义，并为 WASM 插件生成客户端包装器。
 
-This tool is the unified code generator that handle both host function wrappers and capability wrappers.
+此工具是统一代码生成器，同时处理宿主函数包装器和能力包装器。
 
-## Usage
+## 用法
 
 ```bash
 ndpgen -input <dir> -output <dir> [-package <name>] [-v] [-dry-run] [-host-only] [-go] [-rust]
 ```
 
-### Flags
+### 标志
 
-| Flag         | Description                                                    | Default              |
+| 标志         | 描述                                                    | 默认              |
 |--------------|----------------------------------------------------------------|----------------------|
-| `-input`     | Directory containing Go source files with annotated interfaces | Required             |
-| `-output`    | Directory where generated files will be written                | Same as input        |
-| `-package`   | Package name for generated files                               | Inferred from output |
-| `-v`         | Verbose output                                                 | `false`              |
-| `-dry-run`   | Parse and validate without writing files                       | `false`              |
-| `-host-only` | Generate only host function wrappers (capability support TBD)  | `true`               |
-| `-go`        | Generate Go client wrappers                                    | `true`*              |
-| `-rust`      | Generate Rust client wrappers                                  | `false`              |
+| `-input`     | 包含带注解接口的 Go 源文件的目录 | 必需             |
+| `-output`    | 生成文件写入的目录                | 与 input 相同        |
+| `-package`   | 生成文件的包名                               | 从 output 推断 |
+| `-v`         | 详细输出                                                 | `false`              |
+| `-dry-run`   | 解析并校验但不写入文件                       | `false`              |
+| `-host-only` | 仅生成宿主函数包装器（能力支持待定）  | `true`               |
+| `-go`        | 生成 Go 客户端包装器                                    | `true`*              |
+| `-rust`      | 生成 Rust 客户端包装器                                  | `false`              |
 
-\* `-go` is enabled by default when `-rust` is not specified. Use `-go -rust` to generate both languages.
+\* 当未指定 `-rust` 时，`-go` 默认启用。使用 `-go -rust` 可同时生成两种语言。
 
-### Example
+### 示例
 
 ```bash
 go run ./plugins/cmd/ndpgen \
@@ -33,44 +33,44 @@ go run ./plugins/cmd/ndpgen \
   -output ./plugins/pdk
 ```
 
-## Annotations
+## 注解
 
 ### `//nd:hostservice`
 
-Marks an interface as a host service that will have wrappers generated.
+将接口标记为将生成包装器的宿主服务。
 
 ```go
 //nd:hostservice name=<ServiceName> permission=<permission>
 type MyService interface { ... }
 ```
 
-| Parameter    | Description                                                     | Required |
+| 参数    | 描述                                                     | 必需 |
 |--------------|-----------------------------------------------------------------|----------|
-| `name`       | Service name used in generated type names and function prefixes | Yes      |
-| `permission` | Permission required by plugins to use this service              | Yes      |
+| `name`       | 用于生成类型名和函数前缀的服务名称 | 是      |
+| `permission` | 插件使用此服务所需的权限              | 是      |
 
 ### `//nd:hostfunc`
 
-Marks a method within a host service interface for export to plugins.
+将宿主服务接口中的方法标记为导出给插件。
 
 ```go
 //nd:hostfunc [name=<export_name>]
 MethodName(ctx context.Context, ...) (result Type, err error)
 ```
 
-| Parameter | Description                                                             | Required |
+| 参数 | 描述                                                             | 必需 |
 |-----------|-------------------------------------------------------------------------|----------|
-| `name`    | Custom export name (default: `<servicename>_<methodname>` in lowercase) | No       |
+| `name`    | 自定义导出名称（默认：小写的 `<servicename>_<methodname>`） | 否       |
 
-## Input Format
+## 输入格式
 
-Host service interfaces must follow these conventions:
+宿主服务接口必须遵循以下约定：
 
-1. **First parameter must be `context.Context`** - Required for all methods
-2. **Last return value should be `error`** - For proper error handling
-3. **Annotations must be on consecutive lines** - No blank comment lines between doc and annotation
+1. **第一个参数必须是 `context.Context`** - 所有方法都必需
+2. **最后一个返回值应为 `error`** - 用于正确处理错误
+3. **注解必须位于连续的行** - 文档与注解之间不能有空注释行
 
-### Example Interface
+### 示例接口
 
 ```go
 package host
@@ -87,36 +87,36 @@ type SubsonicAPIService interface {
 }
 ```
 
-## Generated Output
+## 生成的输出
 
-### Go Client Library (Go/TinyGo WASM)
+### Go 客户端库（Go/TinyGo WASM）
 
-Generated files are named `nd_host_<servicename>.go` (lowercase) and placed in `$output/go/host/`. The `$output/go/` directory becomes a complete Go module (`github.com/navidrome/navidrome/plugins/pdk/go`) with package name `host`, intended for import by Navidrome plugins built with TinyGo.
+生成的文件命名为 `nd_host_<servicename>.go`（小写），并放置在 `$output/go/host/` 中。`$output/go/` 目录成为一个完整的 Go 模块（`github.com/navidrome/navidrome/plugins/pdk/go`），包名为 `host`，供使用 TinyGo 构建的 Navidrome 插件导入。
 
-The generator creates:
-- `nd_host_<servicename>.go` - Client wrapper code (WASM build)
-- `nd_host_<servicename>_stub.go` - Mock implementations for non-WASM platforms (testing)
-- `doc.go` - Package documentation listing all available services
-- `go.mod` - Go module file with required dependencies
+生成器会创建：
+- `nd_host_<servicename>.go` - 客户端包装代码（WASM 构建）
+- `nd_host_<servicename>_stub.go` - 面向非 WASM 平台的 mock 实现（测试用）
+- `doc.go` - 列出所有可用服务的包文档
+- `go.mod` - 含所需依赖的 Go 模块文件
 
-Each service file includes:
+每个服务文件都包含：
 
-- `// Code generated by ndpgen. DO NOT EDIT.` header
-- Required imports (`encoding/json`, `errors`, `github.com/extism/go-pdk`)
-- `//go:wasmimport` declarations for each host function
-- Response struct types and any struct definitions from the service
-- Wrapper functions that handle memory allocation and JSON parsing
+- `// Code generated by ndpgen. DO NOT EDIT.` 头部
+- 必需的导入（`encoding/json`、`errors`、`github.com/extism/go-pdk`）
+- 每个宿主函数的 `//go:wasmimport` 声明
+- 响应结构体类型以及服务中的任何结构体定义
+- 处理内存分配和 JSON 解析的包装函数
 
-### Testing Plugins with Mocks
+### 使用 mock 测试插件
 
-The stub files (`*_stub.go`) contain [testify/mock](https://github.com/stretchr/testify) implementations that allow plugin authors to unit test their code on non-WASM platforms.
+stub 文件（`*_stub.go`）包含 [testify/mock](https://github.com/stretchr/testify) 实现，让插件作者能够在非 WASM 平台上对其代码进行单元测试。
 
-Each host service has:
-- A private mock struct embedding `mock.Mock`
-- An exported auto-instantiated mock instance (e.g., `host.CacheMock`, `host.ArtworkMock`)
-- Wrapper functions that delegate to the mock
+每个宿主服务都有：
+- 一个嵌入 `mock.Mock` 的私有 mock 结构体
+- 一个导出的、自动实例化的 mock 实例（例如 `host.CacheMock`、`host.ArtworkMock`）
+- 委托给 mock 的包装函数
 
-**Example: Testing a plugin that uses the Cache service**
+**示例：测试使用 Cache 服务的插件**
 
 ```go
 package myplugin
@@ -145,37 +145,37 @@ func TestMyPluginFunction(t *testing.T) {
 }
 ```
 
-**Resetting mocks between tests:**
+**在测试之间重置 mock：**
 
-If you need to reset mock state between tests, testify's mock doesn't have a built-in reset. Either use separate test functions (testify automatically resets between test runs), or create a helper to set up fresh expectations.
+如果你需要在测试之间重置 mock 状态，testify 的 mock 没有内置的重置方法。要么使用独立的测试函数（testify 会在测试运行之间自动重置），要么创建一个辅助函数来设置全新的期望。
 
-### Rust Client Library
+### Rust 客户端库
 
-When using `-rust`, Rust client files are generated in a `rust/` subdirectory.
+使用 `-rust` 时，Rust 客户端文件会生成在 `rust/` 子目录中。
 
-## Supported Types
+## 支持的类型
 
-ndpgen supports these Go types in method signatures:
+ndpgen 在方法签名中支持以下 Go 类型：
 
-| Type                          | JSON Representation                      |
+| 类型                          | JSON 表示                      |
 |-------------------------------|------------------------------------------|
-| `string`, `int`, `bool`, etc. | Native JSON types                        |
-| `[]T` (slices)                | JSON arrays                              |
-| `map[K]V` (maps)              | JSON objects                             |
-| `*T` (pointers)               | Nullable fields                          |
-| `interface{}` / `any`         | Converts to `any`                        |
-| Custom structs                | JSON objects (must be JSON-serializable) |
+| `string`、`int`、`bool` 等 | 原生 JSON 类型                        |
+| `[]T`（切片）                | JSON 数组                              |
+| `map[K]V`（映射）              | JSON 对象                             |
+| `*T`（指针）               | 可空字段                          |
+| `interface{}` / `any`         | 转换为 `any`                        |
+| 自定义结构体                | JSON 对象（必须是可 JSON 序列化的） |
 
-### Multiple Return Values
+### 多个返回值
 
-Methods can return multiple values (plus error):
+方法可以返回多个值（外加 error）：
 
 ```go
 //nd:hostfunc
 Search(ctx context.Context, query string) (results []string, total int, hasMore bool, err error)
 ```
 
-Generates:
+生成：
 
 ```go
 type ServiceSearchResponse struct {
@@ -186,7 +186,7 @@ type ServiceSearchResponse struct {
 }
 ```
 
-## Running Tests
+## 运行测试
 
 ```bash
 go test ./plugins/cmd/ndpgen/...

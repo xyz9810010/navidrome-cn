@@ -1,22 +1,22 @@
-# Navidrome Plugin System
+# Navidrome 插件系统
 
-Navidrome supports WebAssembly (Wasm) plugins for extending functionality. Plugins run in a secure sandbox and can provide metadata agents, scrobblers, lyrics providers, audio similarity, and other integrations through host services like scheduling, caching, task queues, WebSockets, and Subsonic API access.
+Navidrome 支持通过 WebAssembly (Wasm) 插件来扩展功能。插件在安全的沙箱中运行，可以通过调度、缓存、任务队列、WebSocket 和 Subsonic API 访问等宿主服务，提供元数据代理、Scrobbler、歌词提供方、音频相似度等功能集成。
 
-The plugin system is built on **[Extism](https://extism.org/)**, a cross-language framework for building WebAssembly plugins. You can write plugins in any language that Extism supports (Go, Rust, Python, TypeScript, and more) using their Plugin Development Kits (PDKs).
+插件系统构建于 **[Extism](https://extism.org/)** 之上，这是一个用于构建 WebAssembly 插件的跨语言框架。你可以使用 Extism 支持的任何语言（Go、Rust、Python、TypeScript 等）编写插件，并使用其插件开发套件（PDK）。
 
-**Essential Extism Resources:**
-- [Extism Documentation](https://extism.org/docs/overview) – Core concepts and architecture
-- [Plugin Development Kits (PDKs)](https://extism.org/docs/concepts/pdk) – Language-specific libraries for writing plugins
-- [Go PDK](https://github.com/extism/go-pdk) – Recommended for Go plugins with TinyGo
-- [Rust PDK](https://github.com/extism/rust-pdk) – For Rust plugins
-- [Python PDK](https://github.com/extism/python-pdk) – Experimental Python support
-- [JavaScript PDK](https://github.com/extism/js-pdk) – For TypeScript/JavaScript plugins
+**必备的 Extism 资源：**
+- [Extism 文档](https://extism.org/docs/overview) – 核心概念与架构
+- [插件开发套件（PDK）](https://extism.org/docs/concepts/pdk) – 用于编写插件的各语言专用库
+- [Go PDK](https://github.com/extism/go-pdk) – 推荐配合 TinyGo 编写 Go 插件
+- [Rust PDK](https://github.com/extism/rust-pdk) – 用于 Rust 插件
+- [Python PDK](https://github.com/extism/python-pdk) – 实验性的 Python 支持
+- [JavaScript PDK](https://github.com/extism/js-pdk) – 用于 TypeScript/JavaScript 插件
 
-## Table of Contents
+## 目录
 
-- [Quick Start](#quick-start)
-- [Plugin Basics](#plugin-basics)
-- [Capabilities](#capabilities)
+- [快速开始](#quick-start)
+- [插件基础](#plugin-basics)
+- [能力](#capabilities)
   - [MetadataAgent](#metadataagent)
   - [Scrobbler](#scrobbler)
   - [Lyrics](#lyrics)
@@ -25,7 +25,7 @@ The plugin system is built on **[Extism](https://extism.org/)**, a cross-languag
   - [Lifecycle](#lifecycle)
   - [SchedulerCallback](#schedulercallback)
   - [WebSocketCallback](#websocketcallback)
-- [Host Services](#host-services)
+- [宿主服务](#host-services)
   - [HTTP](#http)
   - [Scheduler](#scheduler)
   - [Cache](#cache)
@@ -40,19 +40,19 @@ The plugin system is built on **[Extism](https://extism.org/)**, a cross-languag
   - [Config](#config)
   - [Users](#users)
   - [ScrobbleRetriever](#scrobbleretriever)
-- [Configuration](#configuration)
-- [Command Line Interface](#command-line-interface)
-- [Building Plugins](#building-plugins)
-- [Examples](#examples)
-- [Security](#security)
+- [配置](#configuration)
+- [命令行接口](#command-line-interface)
+- [构建插件](#building-plugins)
+- [示例](#examples)
+- [安全性](#security)
 
 ---
 
-## Quick Start
+## 快速开始
 
-### 1. Create a minimal plugin
+### 1. 创建一个最小插件
 
-Create `main.go`:
+创建 `main.go`：
 
 ```go
 package main
@@ -64,7 +64,7 @@ func main() {}
 // Implement your capability functions here
 ```
 
-Create `manifest.json`:
+创建 `manifest.json`：
 
 ```json
 {
@@ -74,7 +74,7 @@ Create `manifest.json`:
 }
 ```
 
-### 2. Build with TinyGo and package as .ndp
+### 2. 使用 TinyGo 构建并打包为 .ndp
 
 ```bash
 # Compile to WebAssembly
@@ -84,9 +84,9 @@ tinygo build -o plugin.wasm -target wasip1 -buildmode=c-shared .
 zip -j my-plugin.ndp manifest.json plugin.wasm
 ```
 
-### 3. Install
+### 3. 安装
 
-Copy `my-plugin.ndp` to your Navidrome plugins folder and enable plugins in your config:
+将 `my-plugin.ndp` 复制到你的 Navidrome 插件目录，并在配置中启用插件：
 
 ```toml
 [Plugins]
@@ -96,27 +96,27 @@ Folder = "/path/to/plugins"
 
 ---
 
-## Plugin Basics
+## 插件基础
 
-### What is a Plugin?
+### 什么是插件？
 
-A Navidrome plugin is an `.ndp` package file (zip archive) containing:
+一个 Navidrome 插件是一个 `.ndp` 包文件（zip 压缩包），包含：
 
-1. **`manifest.json`** – Plugin metadata (name, author, version, permissions)
-2. **`plugin.wasm`** – Compiled WebAssembly module with capability functions
+1. **`manifest.json`** – 插件元数据（名称、作者、版本、权限）
+2. **`plugin.wasm`** – 编译后的 WebAssembly 模块，包含能力函数
 
-### Plugin Naming
+### 插件命名
 
-Plugins are identified by their **filename** (without `.ndp` extension), not the manifest `name` field:
+插件通过其**文件名**（不含 `.ndp` 扩展名）来标识，而非 manifest 中的 `name` 字段：
 
-- `my-plugin.ndp` → plugin ID is `my-plugin`
-- The manifest `name` is the display name shown in the UI
+- `my-plugin.ndp` → 插件 ID 为 `my-plugin`
+- manifest 中的 `name` 是显示在界面中的显示名称
 
-This allows users to have multiple instances of the same plugin with different configs by renaming the files.
+这样用户可以通过重命名文件来运行同一插件的多个实例，并分别使用不同的配置。
 
-### The Manifest
+### Manifest
 
-Every plugin must include a `manifest.json` file. Example:
+每个插件都必须包含一个 `manifest.json` 文件。示例：
 
 ```json
 {
@@ -138,13 +138,13 @@ Every plugin must include a `manifest.json` file. Example:
 }
 ```
 
-**Required fields:** `name`, `author`, `version`
+**必填字段：** `name`、`author`、`version`
 
-**Optional fields:** `description`, `website`, `config`, `permissions`
+**可选字段：** `description`、`website`、`config`、`permissions`
 
-#### Config Definition
+#### 配置定义
 
-The `config` field defines the plugin's configuration schema using [JSON Schema (draft-07)](https://json-schema.org/) and an optional [JSONForms](https://jsonforms.io/) UI schema for rendering in the Navidrome web UI:
+`config` 字段使用 [JSON Schema (draft-07)](https://json-schema.org/) 定义插件的配置结构，并可选地使用 [JSONForms](https://jsonforms.io/) UI schema 在 Navidrome Web 界面中渲染：
 
 ```json
 {
@@ -166,43 +166,43 @@ The `config` field defines the plugin's configuration schema using [JSON Schema 
 
 ---
 
-## Capabilities
+## 能力
 
-Capabilities define what your plugin can do. They're automatically detected based on which functions you export. A plugin can implement multiple capabilities.
+能力定义了你的插件可以做什么。它们会根据你导出的函数自动检测。一个插件可以实现多种能力。
 
 ### MetadataAgent
 
-Provides artist and album metadata. All methods are **optional** — implement only the ones your data source supports.
+提供艺人和专辑元数据。所有方法都是**可选的** —— 只实现你的数据源支持的那些方法即可。
 
-> **Returning "not found".** When you have no data for an item, return an empty response and no
-> error. In the Go PDK that is `return nil, nil`. Navidrome reads it as a definitive "not found"
-> and stops asking.
+> **返回“未找到”。** 当你对某个条目没有数据时，返回空响应且不返回错误。
+> 在 Go PDK 中即 `return nil, nil`。Navidrome 会将其视为确定性的“未找到”，
+> 并停止继续询问。
 >
-> Return an error only when the plugin itself failed, such as an unreachable API or a broken host
-> call. Navidrome retries failed calls with backoff. A plugin that errors on "no data" makes
-> Navidrome retry every item it has no data for.
+> 仅当插件自身发生故障时（例如 API 无法访问或宿主调用出错）才返回错误。
+> Navidrome 会对失败的调用进行退避重试。如果插件在“没有数据”时报错，会导致
+> Navidrome 对其没有数据的每个条目都进行重试。
 
-| Function                          | Input                      | Output                           | Description              |
+| 函数                              | 输入                        | 输出                              | 说明                      |
 |-----------------------------------|----------------------------|----------------------------------|--------------------------|
-| `nd_get_artist_mbid`              | `{id, name}`               | `{mbid}`                         | Get MusicBrainz ID       |
-| `nd_get_artist_url`               | `{id, name, mbid?}`        | `{url}`                          | Get artist URL           |
-| `nd_get_artist_biography`         | `{id, name, mbid?}`        | `{biography}`                    | Get artist biography     |
-| `nd_get_similar_artists`          | `{id, name, mbid?, limit}` | `{artists: [{name, mbid?}]}`     | Get similar artists      |
-| `nd_get_artist_images`            | `{id, name, mbid?}`        | `{images: [{url, size}]}`        | Get artist images        |
-| `nd_get_artist_top_songs`         | `{id, name, mbid?, count}` | `{songs: [{name, mbid?}]}`       | Get top songs            |
-| `nd_get_album_info`               | `{name, artist, mbid?}`    | `{name, mbid, description, url}` | Get album info           |
-| `nd_get_album_images`             | `{name, artist, mbid?}`    | `{images: [{url, size}]}`        | Get album images         |
-| `nd_get_similar_songs_by_track`   | `{id, name, artist, ...}`  | `{songs: [{name, artist}]}`      | Similar songs by track   |
-| `nd_get_similar_songs_by_album`   | `{id, name, artist, ...}`  | `{songs: [{name, artist}]}`      | Similar songs by album   |
-| `nd_get_similar_songs_by_artist`  | `{id, name, mbid?, count}` | `{songs: [{name, artist}]}`      | Similar songs by artist  |
+| `nd_get_artist_mbid`              | `{id, name}`               | `{mbid}`                         | 获取 MusicBrainz ID       |
+| `nd_get_artist_url`               | `{id, name, mbid?}`        | `{url}`                          | 获取艺人 URL              |
+| `nd_get_artist_biography`         | `{id, name, mbid?}`        | `{biography}`                    | 获取艺人简介              |
+| `nd_get_similar_artists`          | `{id, name, mbid?, limit}` | `{artists: [{name, mbid?}]}`     | 获取相似艺人              |
+| `nd_get_artist_images`            | `{id, name, mbid?}`        | `{images: [{url, size}]}`        | 获取艺人图片              |
+| `nd_get_artist_top_songs`         | `{id, name, mbid?, count}` | `{songs: [{name, mbid?}]}`       | 获取热门歌曲              |
+| `nd_get_album_info`               | `{name, artist, mbid?}`    | `{name, mbid, description, url}` | 获取专辑信息              |
+| `nd_get_album_images`             | `{name, artist, mbid?}`    | `{images: [{url, size}]}`        | 获取专辑图片              |
+| `nd_get_similar_songs_by_track`   | `{id, name, artist, ...}`  | `{songs: [{name, artist}]}`      | 按曲目获取相似歌曲        |
+| `nd_get_similar_songs_by_album`   | `{id, name, artist, ...}`  | `{songs: [{name, artist}]}`      | 按专辑获取相似歌曲        |
+| `nd_get_similar_songs_by_artist`  | `{id, name, mbid?, count}` | `{songs: [{name, artist}]}`      | 按艺人获取相似歌曲        |
 
-To use the plugin as a metadata agent, add it to your config:
+要将插件用作元数据代理，请将其添加到配置中：
 
 ```toml
 Agents = "lastfm,spotify,my-plugin"
 ```
 
-**Example (using Go PDK package):**
+**示例（使用 Go PDK 包）：**
 
 ```go
 package main
@@ -219,7 +219,7 @@ func init() { metadata.Register(&myPlugin{}) }
 func main() {}
 ```
 
-**Example (raw wasmexport):**
+**示例（原生 wasmexport）：**
 
 ```go
 //go:wasmexport nd_get_artist_biography
@@ -236,18 +236,18 @@ func ndGetArtistBiography() int32 {
 
 ### Scrobbler
 
-Integrates with external scrobbling services. All four methods are **required**.
+与外部 scrobbling 服务集成。四个方法全部为**必填**。
 
-| Function                        | Input        | Output | Description                  |
+| 函数                            | 输入        | 输出 | 说明                          |
 |---------------------------------|--------------|--------|------------------------------|
-| `nd_scrobbler_is_authorized`    | `{username}` | `bool` | Check if user is authorized  |
-| `nd_scrobbler_now_playing`      | See below    | (none) | Send now playing             |
-| `nd_scrobbler_scrobble`         | See below    | (none) | Submit a scrobble            |
-| `nd_scrobbler_playback_report`  | See below    | (none) | Send playback state report   |
+| `nd_scrobbler_is_authorized`    | `{username}` | `bool` | 检查用户是否已授权            |
+| `nd_scrobbler_now_playing`      | 见下文       | （无）| 发送正在播放                 |
+| `nd_scrobbler_scrobble`         | 见下文       | （无）| 提交一次 scrobble            |
+| `nd_scrobbler_playback_report`  | 见下文       | （无）| 发送播放状态报告             |
 
-> **Important:** Scrobbler plugins require the `users` permission in their manifest. Scrobble events are only sent for users assigned to the plugin through Navidrome's configuration.
+> **重要：** Scrobbler 插件需要在其 manifest 中声明 `users` 权限。Scrobble 事件只会发送给通过 Navidrome 配置分配给该插件的用户。
 
-**Manifest permission:**
+**Manifest 权限：**
 
 ```json
 {
@@ -259,7 +259,7 @@ Integrates with external scrobbling services. All four methods are **required**.
 }
 ```
 
-**NowPlaying/Scrobble Input:**
+**NowPlaying/Scrobble 输入：**
 
 ```json
 {
@@ -281,9 +281,9 @@ Integrates with external scrobbling services. All four methods are **required**.
 }
 ```
 
-**PlaybackReport Input:**
+**PlaybackReport 输入：**
 
-Same `username` and `track` fields, plus playback state details:
+与上述相同的 `username` 和 `track` 字段，外加播放状态详情：
 
 ```json
 {
@@ -298,15 +298,15 @@ Same `username` and `track` fields, plus playback state details:
 }
 ```
 
-`state` is one of `starting`, `playing`, `paused`, `stopped`, or `expired`.
+`state` 为 `starting`、`playing`、`paused`、`stopped` 或 `expired` 之一。
 
-**Error Handling:**
+**错误处理：**
 
-On success, return `0`. On failure, use `pdk.SetError()` with one of these error types:
+成功时返回 `0`。失败时使用 `pdk.SetError()` 并配合以下错误类型之一：
 
-- `scrobbler(not_authorized)` – User needs to re-authorize
-- `scrobbler(retry_later)` – Temporary failure, Navidrome will retry
-- `scrobbler(unrecoverable)` – Permanent failure, scrobble discarded
+- `scrobbler(not_authorized)` – 用户需要重新授权
+- `scrobbler(retry_later)` – 临时故障，Navidrome 将重试
+- `scrobbler(unrecoverable)` – 永久故障，该 scrobble 将被丢弃
 
 ```go
 import "github.com/navidrome/navidrome/plugins/pdk/go/scrobbler"
@@ -318,82 +318,82 @@ return scrobbler.ScrobblerErrorUnrecoverable
 
 ### Lyrics
 
-Provides lyrics for tracks. The single method is **required**.
+为曲目提供歌词。该方法为**必填**。
 
-| Function                | Input                         | Output                             | Description     |
+| 函数                | 输入                         | 输出                             | 说明     |
 |-------------------------|-------------------------------|------------------------------------|-----------------|
-| `nd_lyrics_get_lyrics`  | `{artistName, title, ...}`    | `{lyrics: [{lang, text}]}`         | Get lyrics      |
+| `nd_lyrics_get_lyrics`  | `{artistName, title, ...}`    | `{lyrics: [{lang, text}]}`         | 获取歌词      |
 
-Each returned lyric entry has a `lang` (language code) and `text` field. Multiple entries can be returned for different languages.
+返回的每个歌词条目都包含一个 `lang`（语言代码）和 `text` 字段。可以针对不同语言返回多个条目。
 
 ### SonicSimilarity
 
-Audio-similarity discovery based on acoustic features (e.g., embeddings). Both methods are **required**.
+基于声学特征（如嵌入向量）的音频相似度发现。两个方法均为**必填**。
 
-| Function                        | Input                            | Output                                     | Description                           |
+| 函数                            | 输入                            | 输出                                     | 说明                                   |
 |---------------------------------|----------------------------------|--------------------------------------------|---------------------------------------|
-| `nd_get_sonic_similar_tracks`   | `{song, count}`                  | `{matches: [{song, similarity}]}`          | Find acoustically similar tracks      |
-| `nd_find_sonic_path`            | `{startSong, endSong, count}`    | `{matches: [{song, similarity}]}`          | Find a path between two songs         |
+| `nd_get_sonic_similar_tracks`   | `{song, count}`                  | `{matches: [{song, similarity}]}`          | 查找声学上相似的曲目                  |
+| `nd_find_sonic_path`            | `{startSong, endSong, count}`    | `{matches: [{song, similarity}]}`          | 查找两首歌曲之间的路径                 |
 
-Each match contains a `song` reference and a `similarity` score (float64, 0.0–1.0).
+每个匹配项都包含一个 `song` 引用和一个 `similarity` 相似度分数（float64，0.0–1.0）。
 
 ### TaskWorker
 
-Processes tasks from a queue. **Required** if your plugin uses the [Task](#task) host service: declaring the `taskqueue` permission without exporting this function fails the plugin load.
+处理来自队列的任务。如果你的插件使用 [Task](#task) 宿主服务，则该函数为**必填**：声明了 `taskqueue` 权限却不导出此函数会导致插件加载失败。
 
-| Function            | Input                                       | Output  | Description          |
+| 函数            | 输入                                       | 输出  | 说明                  |
 |---------------------|---------------------------------------------|---------|----------------------|
-| `nd_task_execute`   | `{queueName, taskID, payload, attempt}`     | `string`| Execute a queued task|
+| `nd_task_execute`   | `{queueName, taskID, payload, attempt}`     | `string`| 执行队列中的任务      |
 
-The `payload` is raw bytes (the same bytes passed to `TaskEnqueue`). The `attempt` counter starts at 1 and increments on retries. Return a string result on success.
+`payload` 为原始字节（与传给 `TaskEnqueue` 的字节相同）。`attempt` 计数器从 1 开始，并在每次重试时递增。成功时返回一个字符串结果。
 
 ### Lifecycle
 
-Optional initialization callback. Called once after the plugin fully loads.
+可选的初始化回调。在插件完全加载后调用一次。
 
-| Function     | Input | Output     | Description                    |
+| 函数     | 输入 | 输出     | 说明                          |
 |--------------|-------|------------|--------------------------------|
-| `nd_on_init` | `{}`  | `{error?}` | Called once after plugin loads |
+| `nd_on_init` | `{}`  | `{error?}` | 插件加载完成后调用一次          |
 
-Useful for initializing connections, scheduling recurring tasks, etc. Errors are logged but don't prevent the plugin from loading.
+可用于初始化连接、调度周期性任务等。错误会被记录日志，但不会阻止插件加载。
 
 ### SchedulerCallback
 
-Receives scheduled task events. **Required** if your plugin uses the [Scheduler](#scheduler) host service: declaring the `scheduler` permission without exporting this function fails the plugin load.
+接收计划任务事件。如果你的插件使用 [Scheduler](#scheduler) 宿主服务，则该函数为**必填**：声明了 `scheduler` 权限却不导出此函数会导致插件加载失败。
 
-| Function                  | Input                                        | Output | Description                 |
+| 函数                  | 输入                                        | 输出 | 说明                         |
 |---------------------------|----------------------------------------------|--------|-----------------------------|
-| `nd_scheduler_callback`   | `{scheduleId, payload, isRecurring}`         | (none) | Handle scheduled task event |
+| `nd_scheduler_callback`   | `{scheduleId, payload, isRecurring}`         | （无）| 处理计划任务事件            |
 
 ### WebSocketCallback
 
-Receives WebSocket events. Export any subset of these to handle events from the [WebSocket](#websocket) host service.
+接收 WebSocket 事件。导出以下任意子集即可处理来自 [WebSocket](#websocket) 宿主服务的事件。
 
-| Function                         | Input                           | Description                      |
+| 函数                             | 输入                           | 说明                          |
 |----------------------------------|---------------------------------|----------------------------------|
-| `nd_websocket_on_text_message`   | `{connectionId, message}`       | Text message received            |
-| `nd_websocket_on_binary_message` | `{connectionId, data}`          | Binary message received (base64) |
-| `nd_websocket_on_error`          | `{connectionId, error}`         | Connection error                 |
-| `nd_websocket_on_close`          | `{connectionId, code, reason}`  | Connection closed                |
+| `nd_websocket_on_text_message`   | `{connectionId, message}`       | 收到文本消息                    |
+| `nd_websocket_on_binary_message` | `{connectionId, data}`          | 收到二进制消息（base64）        |
+| `nd_websocket_on_error`          | `{connectionId, error}`         | 连接错误                        |
+| `nd_websocket_on_close`          | `{connectionId, code, reason}`  | 连接已关闭                      |
 
-Each callback invocation is subject to a 30-second timeout.
+每次回调调用都受 30 秒超时限制。
 
 ---
 
-## Host Services
+## 宿主服务
 
-Host services let your plugin call back into Navidrome for advanced functionality. Each service (except [Config](#config)) requires declaring the corresponding permission in your manifest.
+宿主服务让你的插件可以回调 Navidrome 以获得高级功能。每个服务（[Config](#config) 除外）都需要在 manifest 中声明相应的权限。
 
-### Go PDK Setup
+### Go PDK 设置
 
-All host service examples below use the generated Go SDK. Add this to your `go.mod`:
+以下所有宿主服务示例均使用生成的 Go SDK。将此添加到你的 `go.mod`：
 
 ```
 require github.com/navidrome/navidrome/plugins/pdk/go v0.0.0
 replace github.com/navidrome/navidrome/plugins/pdk/go => ../../pdk/go
 ```
 
-Then import:
+然后导入：
 
 ```go
 import "github.com/navidrome/navidrome/plugins/pdk/go/host"
@@ -401,9 +401,9 @@ import "github.com/navidrome/navidrome/plugins/pdk/go/host"
 
 ### HTTP
 
-Make HTTP requests to external services. This is a dedicated host service (separate from Extism's built-in HTTP support) with additional features like timeouts and redirect control.
+向外部服务发起 HTTP 请求。这是一个专用的宿主服务（独立于 Extism 内置的 HTTP 支持），具有超时和重定向控制等附加功能。
 
-**Manifest permission:**
+**Manifest 权限：**
 
 ```json
 {
@@ -416,15 +416,15 @@ Make HTTP requests to external services. This is a dedicated host service (separ
 }
 ```
 
-**Host functions:**
+**宿主函数：**
 
-| Function    | Parameters                                               | Returns                          |
+| 函数        | 参数                                                        | 返回值                          |
 |-------------|----------------------------------------------------------|----------------------------------|
 | `http_send` | `method, url, headers, body, timeoutMs, noFollowRedirects` | `statusCode, headers, body`    |
 
-**Limits:** Requests time out after 10 seconds by default (override per request with `timeoutMs`). Redirects are followed up to 5 times, re-checking the allowed hosts on every hop. Response bodies are capped at 10MB.
+**限制：** 请求默认在 10 秒后超时（可通过 `timeoutMs` 按请求覆盖）。重定向最多跟随 5 次，并在每一跳重新检查允许的主机。响应体上限为 10MB。
 
-**Usage:**
+**用法：**
 
 ```go
 resp, err := host.HTTPSend(host.HTTPRequest{
@@ -439,9 +439,9 @@ if resp.StatusCode == 200 {
 
 ### Scheduler
 
-Schedule one-time or recurring tasks. Your plugin must export the [`nd_scheduler_callback`](#schedulercallback) function to receive events.
+调度一次性或周期性的任务。你的插件必须导出 [`nd_scheduler_callback`](#schedulercallback) 函数才能接收事件。
 
-**Manifest permission:**
+**Manifest 权限：**
 
 ```json
 {
@@ -453,15 +453,15 @@ Schedule one-time or recurring tasks. Your plugin must export the [`nd_scheduler
 }
 ```
 
-**Host functions:**
+**宿主函数：**
 
-| Function                      | Parameters                               | Description                 |
+| 函数                          | 参数                                     | 说明                 |
 |-------------------------------|------------------------------------------|-----------------------------|
-| `scheduler_scheduleonetime`   | `delaySeconds, payload, scheduleId?`     | Schedule one-time callback  |
-| `scheduler_schedulerecurring` | `cronExpression, payload, scheduleId?`   | Schedule recurring callback |
-| `scheduler_cancelschedule`    | `scheduleId`                             | Cancel a scheduled task     |
+| `scheduler_scheduleonetime`   | `delaySeconds, payload, scheduleId?`     | 调度一次性回调        |
+| `scheduler_schedulerecurring` | `cronExpression, payload, scheduleId?`   | 调度周期性回调        |
+| `scheduler_cancelschedule`    | `scheduleId`                             | 取消已调度的任务      |
 
-**Usage:**
+**用法：**
 
 ```go
 // Schedule one-time task in 60 seconds
@@ -476,9 +476,9 @@ err := host.SchedulerCancelSchedule(scheduleID)
 
 ### Cache
 
-In-memory TTL-based cache. Each plugin has its own isolated namespace. Cleared on server restart.
+基于 TTL 的内存缓存。每个插件都有自己独立的命名空间。服务器重启时会被清空。
 
-**Manifest permission:**
+**Manifest 权限：**
 
 ```json
 {
@@ -490,24 +490,24 @@ In-memory TTL-based cache. Each plugin has its own isolated namespace. Cleared o
 }
 ```
 
-**Host functions:**
+**宿主函数：**
 
-| Function          | Parameters                | Description           |
+| 函数              | 参数                    | 说明                   |
 |-------------------|---------------------------|-----------------------|
-| `cache_setstring` | `key, value, ttl_seconds` | Store a string        |
-| `cache_getstring` | `key`                     | Get a string          |
-| `cache_setint`    | `key, value, ttl_seconds` | Store an integer      |
-| `cache_getint`    | `key`                     | Get an integer        |
-| `cache_setfloat`  | `key, value, ttl_seconds` | Store a float         |
-| `cache_getfloat`  | `key`                     | Get a float           |
-| `cache_setbytes`  | `key, value, ttl_seconds` | Store bytes           |
-| `cache_getbytes`  | `key`                     | Get bytes             |
-| `cache_has`       | `key`                     | Check if key exists   |
-| `cache_remove`    | `key`                     | Delete a cached value |
+| `cache_setstring` | `key, value, ttl_seconds` | 存储字符串            |
+| `cache_getstring` | `key`                     | 获取字符串            |
+| `cache_setint`    | `key, value, ttl_seconds` | 存储整数              |
+| `cache_getint`    | `key`                     | 获取整数              |
+| `cache_setfloat`  | `key, value, ttl_seconds` | 存储浮点数            |
+| `cache_getfloat`  | `key`                     | 获取浮点数            |
+| `cache_setbytes`  | `key, value, ttl_seconds` | 存储字节              |
+| `cache_getbytes`  | `key`                     | 获取字节              |
+| `cache_has`       | `key`                     | 检查键是否存在        |
+| `cache_remove`    | `key`                     | 删除缓存的值          |
 
-**TTL:** Pass `0` for the default (24 hours), or specify seconds.
+**TTL：** 传入 `0` 使用默认值（24 小时），或指定秒数。
 
-**Usage:**
+**用法：**
 
 ```go
 // Cache a value for 1 hour
@@ -522,9 +522,9 @@ if exists {
 
 ### KVStore
 
-Persistent key-value storage backed by SQLite. Survives server restarts. Each plugin has its own isolated database at `${DataFolder}/plugins/${pluginID}/kvstore.db`.
+由 SQLite 支持的持久化键值存储。服务器重启后依然保留。每个插件在 `${DataFolder}/plugins/${pluginID}/kvstore.db` 拥有自己独立的数据库。
 
-**Manifest permission:**
+**Manifest 权限：**
 
 ```json
 {
@@ -537,25 +537,25 @@ Persistent key-value storage backed by SQLite. Survives server restarts. Each pl
 }
 ```
 
-- `maxSize`: Maximum storage size (e.g., `"1MB"`, `"500KB"`). Default: 1MB
+- `maxSize`：最大存储大小（例如 `"1MB"`、`"500KB"`）。默认值：1MB
 
-**Key constraints:** Maximum 256 bytes, must be valid UTF-8.
+**键约束：** 最大 256 字节，必须是有效的 UTF-8。
 
-**Host functions:**
+**宿主函数：**
 
-| Function                    | Parameters               | Description                       |
+| 函数                        | 参数                     | 说明                                 |
 |-----------------------------|--------------------------|-----------------------------------|
-| `kvstore_set`               | `key, value`             | Store a byte value                |
-| `kvstore_setwithttl`        | `key, value, ttlSeconds` | Store with auto-expiration        |
-| `kvstore_get`               | `key`                    | Retrieve a byte value             |
-| `kvstore_getmany`           | `keys`                   | Retrieve multiple values at once  |
-| `kvstore_has`               | `key`                    | Check if key exists               |
-| `kvstore_list`              | `prefix`                 | List keys matching prefix         |
-| `kvstore_delete`            | `key`                    | Delete a value                    |
-| `kvstore_deletebyprefix`    | `prefix`                 | Delete all keys matching prefix   |
-| `kvstore_getstorageused`    | –                        | Get current storage usage (bytes) |
+| `kvstore_set`               | `key, value`             | 存储字节值                        |
+| `kvstore_setwithttl`        | `key, value, ttlSeconds` | 存储并设置自动过期                |
+| `kvstore_get`               | `key`                    | 获取字节值                        |
+| `kvstore_getmany`           | `keys`                   | 一次性获取多个值                  |
+| `kvstore_has`               | `key`                    | 检查键是否存在                    |
+| `kvstore_list`              | `prefix`                 | 列出匹配前缀的键                  |
+| `kvstore_delete`            | `key`                    | 删除值                            |
+| `kvstore_deletebyprefix`    | `prefix`                 | 删除所有匹配前缀的键              |
+| `kvstore_getstorageused`    | –                        | 获取当前存储使用量（字节）        |
 
-**Usage:**
+**用法：**
 
 ```go
 // Store a value (as raw bytes)
@@ -586,9 +586,9 @@ fmt.Printf("Using %d bytes\n", usage)
 
 ### Storage
 
-A private read-write directory, mounted into the sandbox at `/storage` and backed by `${DataFolder}/plugins/${pluginID}/storage`. Survives server restarts. Use it for data that doesn't fit a key-value store: caches, downloaded files, generated indexes.
+一个私有的读写目录，挂载在沙箱中的 `/storage`，由 `${DataFolder}/plugins/${pluginID}/storage` 支撑。服务器重启后依然保留。可用于存储不适合键值存储的数据：缓存、下载的文件、生成的索引。
 
-**Manifest permission:**
+**Manifest 权限：**
 
 ```json
 {
@@ -600,15 +600,15 @@ A private read-write directory, mounted into the sandbox at `/storage` and backe
 }
 ```
 
-**Host functions:**
+**宿主函数：**
 
-| Function                 | Parameters | Description                        |
+| 函数                     | 参数 | 说明                          |
 |--------------------------|------------|------------------------------------|
-| `storage_getstoragepath` | –          | Get the guest path of the mount    |
+| `storage_getstoragepath` | –          | 获取该挂载点在客户机中的路径      |
 
-**Usage:**
+**用法：**
 
-Normal WASI filesystem calls work inside the mount, so use the `os` package directly:
+挂载点内可使用常规的 WASI 文件系统调用，因此可直接使用 `os` 包：
 
 ```go
 import (
@@ -626,15 +626,15 @@ content, err := os.ReadFile(filepath.Join(storageDir, "cache.json"))
 entries, err := os.ReadDir(storageDir)
 ```
 
-> **Security:** Plugins cannot create symlinks inside the mount, and `..` or absolute paths are rejected. Symlinks that already exist in the directory are still followed, so anything linked in from elsewhere remains reachable.
+> **安全：** 插件不能在挂载点内创建符号链接，`..` 或绝对路径会被拒绝。目录中已存在的符号链接仍会被跟随，因此从别处链接进来的任何内容依然可达。
 
-> **Note:** There is no size limit, unlike [KVStore](#kvstore). The directory is not deleted when a plugin is uninstalled.
+> **注意：** 与 [KVStore](#kvstore) 不同，这里没有大小限制。插件卸载时该目录不会被删除。
 
 ### Task
 
-Background task queue with retry support. Plugins enqueue tasks and process them by exporting the [`nd_task_execute`](#taskworker) capability function.
+带重试支持的后台任务队列。插件通过导出 [`nd_task_execute`](#taskworker) 能力函数来入队和处理任务。
 
-**Manifest permission:**
+**Manifest 权限：**
 
 ```json
 {
@@ -647,25 +647,25 @@ Background task queue with retry support. Plugins enqueue tasks and process them
 }
 ```
 
-**Host functions:**
+**宿主函数：**
 
-| Function            | Parameters                                                    | Description                |
+| 函数                | 参数                                                          | 说明                          |
 |---------------------|---------------------------------------------------------------|----------------------------|
-| `task_createqueue`  | `name, concurrency, maxRetries, backoffMs, delayMs, retentionMs` | Create a named task queue  |
-| `task_enqueue`      | `queueName, payload`                                          | Add a task to the queue    |
-| `task_get`          | `taskID`                                                      | Get task status and result |
-| `task_cancel`       | `taskID`                                                      | Cancel a pending task      |
-| `task_clearqueue`   | `queueName`                                                   | Remove all tasks from queue|
+| `task_createqueue`  | `name, concurrency, maxRetries, backoffMs, delayMs, retentionMs` | 创建命名任务队列            |
+| `task_enqueue`      | `queueName, payload`                                          | 向队列添加任务              |
+| `task_get`          | `taskID`                                                      | 获取任务状态和结果          |
+| `task_cancel`       | `taskID`                                                      | 取消待处理的任务            |
+| `task_clearqueue`   | `queueName`                                                   | 移除队列中的所有任务        |
 
-Tasks are persisted to SQLite, so pending tasks survive server restarts. Queue behavior:
+任务持久化到 SQLite，因此待处理的任务在服务器重启后依然存在。队列行为：
 
-- `concurrency` – Parallel workers (default 1), capped by the manifest's `maxConcurrency`
-- `maxRetries` – Retries for a failed task (default 0); `backoffMs` (default 1000) doubles on each retry
-- `delayMs` – Minimum delay between consecutive task starts, useful for rate limiting (default 0)
-- `retentionMs` – How long finished tasks are kept (default 1 hour, min 1 minute, max 1 week)
-- Payloads are capped at 1MB
+- `concurrency` – 并行工作线程数（默认 1），受 manifest 中 `maxConcurrency` 的上限约束
+- `maxRetries` – 任务失败时的重试次数（默认 0）；`backoffMs`（默认 1000）在每次重试时翻倍
+- `delayMs` – 连续任务启动之间的最小延迟，用于限流（默认 0）
+- `retentionMs` – 已完成任务的保留时长（默认 1 小时，最短 1 分钟，最长 1 周）
+- 载荷上限为 1MB
 
-**Usage:**
+**用法：**
 
 ```go
 // Create a queue with retry configuration
@@ -685,9 +685,9 @@ fmt.Printf("Status: %s, Attempt: %d\n", info.Status, info.Attempt)
 
 ### WebSocket
 
-Establish persistent WebSocket connections to external services. Your plugin must export [WebSocketCallback](#websocketcallback) functions to receive events.
+与外部服务建立持久的 WebSocket 连接。你的插件必须导出 [WebSocketCallback](#websocketcallback) 函数才能接收事件。
 
-**Manifest permission:**
+**Manifest 权限：**
 
 ```json
 {
@@ -700,16 +700,16 @@ Establish persistent WebSocket connections to external services. Your plugin mus
 }
 ```
 
-**Host functions:**
+**宿主函数：**
 
-| Function                   | Parameters                      | Description       |
+| 函数                        | 参数                      | 说明             |
 |----------------------------|---------------------------------|-------------------|
-| `websocket_connect`        | `url, headers?, connectionId?`  | Open a connection |
-| `websocket_sendtext`       | `connectionId, message`         | Send text message |
-| `websocket_sendbinary`     | `connectionId, data`            | Send binary data  |
-| `websocket_closeconnection`| `connectionId, code?, reason?`  | Close connection  |
+| `websocket_connect`        | `url, headers?, connectionId?`  | 打开连接          |
+| `websocket_sendtext`       | `connectionId, message`         | 发送文本消息      |
+| `websocket_sendbinary`     | `connectionId, data`            | 发送二进制数据    |
+| `websocket_closeconnection`| `connectionId, code?, reason?`  | 关闭连接          |
 
-**Usage:**
+**用法：**
 
 ```go
 connID, err := host.WebSocketConnect("wss://gateway.example.com", nil, "")
@@ -719,9 +719,9 @@ host.WebSocketCloseConnection(connID, 1000, "done")
 
 ### Library
 
-Access music library metadata and optionally read files from library directories.
+访问音乐媒体库元数据，并可选地从媒体库目录读取文件。
 
-**Manifest permission:**
+**Manifest 权限：**
 
 ```json
 {
@@ -734,16 +734,16 @@ Access music library metadata and optionally read files from library directories
 }
 ```
 
-- `filesystem` – Set to `true` to enable access to library directories, read-only unless an administrator grants write access (default: `false`)
+- `filesystem` – 设为 `true` 可启用对媒体库目录的访问，默认只读，除非管理员授予写权限（默认值：`false`）
 
-**Host functions:**
+**宿主函数：**
 
-| Function                   | Parameters | Returns                   |
+| 函数                       | 参数   | 返回值                     |
 |----------------------------|------------|---------------------------|
-| `library_getlibrary`       | `id`       | Library metadata          |
-| `library_getalllibraries`  | (none)     | Array of library metadata |
+| `library_getlibrary`       | `id`       | 媒体库元数据              |
+| `library_getalllibraries`  | （无）     | 媒体库元数据数组          |
 
-**Library metadata:**
+**媒体库元数据：**
 
 ```json
 {
@@ -760,11 +760,11 @@ Access music library metadata and optionally read files from library directories
 }
 ```
 
-> **Note:** The `path` and `mountPoint` fields are only included when `filesystem: true` is set in the permission.
+> **注意：** 仅当权限中设置了 `filesystem: true` 时，才会包含 `path` 和 `mountPoint` 字段。
 
-**Filesystem access:**
+**文件系统访问：**
 
-When `filesystem: true`, your plugin can read files from library directories via WASI filesystem APIs. Each library is mounted at `/libraries/<id>`:
+当 `filesystem: true` 时，你的插件可以通过 WASI 文件系统 API 读取媒体库目录中的文件。每个媒体库挂载在 `/libraries/<id>`：
 
 ```go
 import "os"
@@ -773,9 +773,9 @@ content, err := os.ReadFile("/libraries/1/Artist/Album/track.mp3")
 entries, err := os.ReadDir("/libraries/1/Artist")
 ```
 
-> **Security:** Plugins cannot create symlinks inside the mount, and `..` or absolute paths are rejected. Symlinks already present in the library are still followed, so folders linked in from elsewhere work as expected. Access is read-only unless an administrator grants the plugin write access (`navidrome plugin edit <name> --write-access`).
+> **安全：** 插件不能在挂载点内创建符号链接，`..` 或绝对路径会被拒绝。媒体库中已存在的符号链接仍会被跟随，因此从别处链接进来的文件夹会按预期工作。访问默认为只读，除非管理员授予插件写权限（`navidrome plugin edit <name> --write-access`）。
 
-**Usage:**
+**用法：**
 
 ```go
 // Get a specific library
@@ -791,9 +791,9 @@ for _, lib := range libraries {
 
 ### Matcher
 
-Match externally-obtained songs (e.g. results from a recommendation or similarity API) to tracks in the local library, reusing Navidrome's matching algorithm (ID > MBID > ISRC > fuzzy title).
+将从外部获得的歌曲（例如来自推荐或相似度 API 的结果）匹配到本地媒体库中的曲目，复用 Navidrome 的匹配算法（ID > MBID > ISRC > 模糊标题）。
 
-**Manifest permission:**
+**Manifest 权限：**
 
 ```json
 {
@@ -808,17 +808,17 @@ Match externally-obtained songs (e.g. results from a recommendation or similarit
 }
 ```
 
-> **Important:** The `matcher` permission requires the `library` permission.
+> **重要：** `matcher` 权限需要 `library` 权限。
 
-**Host functions:**
+**宿主函数：**
 
-| Function             | Parameters    | Returns                 |
+| 函数                 | 参数        | 返回值                 |
 |----------------------|---------------|-------------------------|
-| `matcher_matchsongs` | `songs, opts` | Array of matched tracks |
+| `matcher_matchsongs` | `songs, opts` | 匹配到的曲目数组        |
 
-The result has one entry per input song, in the same order; the entry for a song with no match is empty. Results are limited to the libraries the plugin (and the scoped user, if any) can access. Set `opts.username` to run the match as a specific user: their favorites and ratings inform tiebreaking, and the returned tracks carry their annotations. User scoping additionally requires the [`users`](#users) permission, with users assigned to the plugin.
+结果按输入歌曲的顺序一一对应；没有匹配项的歌曲对应的条目为空。结果仅限于插件（以及作用域内的用户，如有）可访问的媒体库。设置 `opts.username` 可以以特定用户的身份执行匹配：他们的收藏和评分会影响平局判定，返回的曲目也会带有他们的标注。用户作用域还需要 [`users`](#users) 权限，且用户需分配给该插件。
 
-**Usage:**
+**用法：**
 
 ```go
 import "github.com/navidrome/navidrome/plugins/pdk/go/types"
@@ -830,9 +830,9 @@ matches, err := host.MatcherMatchSongs([]types.SongRef{
 
 ### Artwork
 
-Generate public URLs for Navidrome artwork (albums, artists, tracks, playlists).
+为 Navidrome 的封面（专辑、艺人、曲目、播放列表）生成公开 URL。
 
-**Manifest permission:**
+**Manifest 权限：**
 
 ```json
 {
@@ -844,16 +844,16 @@ Generate public URLs for Navidrome artwork (albums, artists, tracks, playlists).
 }
 ```
 
-**Host functions:**
+**宿主函数：**
 
-| Function                 | Parameters | Returns     |
+| 函数                     | 参数      | 返回值     |
 |--------------------------|------------|-------------|
-| `artwork_getartisturl`   | `id, size` | Artwork URL |
-| `artwork_getalbumurl`    | `id, size` | Artwork URL |
-| `artwork_gettrackurl`    | `id, size` | Artwork URL |
-| `artwork_getplaylisturl` | `id, size` | Artwork URL |
+| `artwork_getartisturl`   | `id, size` | 封面 URL    |
+| `artwork_getalbumurl`    | `id, size` | 封面 URL    |
+| `artwork_gettrackurl`    | `id, size` | 封面 URL    |
+| `artwork_getplaylisturl` | `id, size` | 封面 URL    |
 
-**Usage:**
+**用法：**
 
 ```go
 url, err := host.ArtworkGetAlbumUrl("album-id", 300)
@@ -861,9 +861,9 @@ url, err := host.ArtworkGetAlbumUrl("album-id", 300)
 
 ### SubsonicAPI
 
-Call Navidrome's Subsonic API internally (no network round-trip).
+在内部调用 Navidrome 的 Subsonic API（无网络往返）。
 
-**Manifest permission:**
+**Manifest 权限：**
 
 ```json
 {
@@ -878,16 +878,16 @@ Call Navidrome's Subsonic API internally (no network round-trip).
 }
 ```
 
-> **Important:** The `subsonicapi` permission requires the `users` permission. Which users the plugin can act as is controlled through the Navidrome UI.
+> **重要：** `subsonicapi` 权限需要 `users` 权限。插件能以哪些用户的身份执行操作由 Navidrome 界面控制。
 
-**Host functions:**
+**宿主函数：**
 
-| Function              | Parameters | Returns                        |
+| 函数                  | 参数   | 返回值                        |
 |-----------------------|------------|--------------------------------|
-| `subsonicapi_call`    | `uri`      | JSON response string           |
-| `subsonicapi_callraw` | `uri`      | Content type + binary response |
+| `subsonicapi_call`    | `uri`      | JSON 响应字符串                |
+| `subsonicapi_callraw` | `uri`      | 内容类型 + 二进制响应          |
 
-**Usage:**
+**用法：**
 
 ```go
 // JSON response
@@ -899,19 +899,19 @@ contentType, data, err := host.SubsonicAPICallRaw("getCoverArt?id=al-123&u=usern
 
 ### Config
 
-Access plugin configuration values. Unlike `pdk.GetConfig()` which only retrieves individual values, this service can list all available configuration keys — useful for discovering dynamic configuration.
+访问插件的配置值。与仅能获取单个值的 `pdk.GetConfig()` 不同，此服务可以列出所有可用的配置键 —— 对于发现动态配置非常有用。
 
-> **Note:** This service is always available and does not require a manifest permission.
+> **注意：** 此服务始终可用，无需声明 manifest 权限。
 
-**Host functions:**
+**宿主函数：**
 
-| Function        | Parameters | Returns                     |
+| 函数            | 参数      | 返回值                     |
 |-----------------|------------|-----------------------------|
 | `config_get`    | `key`      | `value, exists`             |
 | `config_getint` | `key`      | `value, exists`             |
-| `config_keys`   | `prefix`   | Array of matching key names |
+| `config_keys`   | `prefix`   | 匹配的键名数组              |
 
-**Usage:**
+**用法：**
 
 ```go
 // Get a configuration value
@@ -929,9 +929,9 @@ allKeys := host.ConfigKeys("")
 
 ### Users
 
-Access user information for the users that the plugin has been granted access to.
+访问插件被授权访问的用户信息。
 
-**Manifest permission:**
+**Manifest 权限：**
 
 ```json
 {
@@ -943,31 +943,31 @@ Access user information for the users that the plugin has been granted access to
 }
 ```
 
-**Important:** Before enabling a plugin that requires the `users` permission, an administrator must configure which users the plugin can access:
+**重要：** 在启用需要 `users` 权限的插件之前，管理员必须配置该插件可以访问哪些用户：
 
-1. **Allow all users** – Enable the "Allow all users" toggle in the plugin settings
-2. **Select specific users** – Choose individual users from the user list
+1. **允许所有用户** – 在插件设置中启用“允许所有用户”开关
+2. **选择特定用户** – 从用户列表中选择单个用户
 
-If neither option is configured, the plugin cannot be enabled.
+如果两个选项都未配置，则插件无法启用。
 
-**Host functions:**
+**宿主函数：**
 
-| Function         | Parameters | Returns               |
+| 函数             | 参数 | 返回值                 |
 |------------------|------------|-----------------------|
-| `users_getusers` | –          | Array of User objects |
-| `users_getadmins`| –          | Array of admin Users  |
+| `users_getusers` | –          | User 对象数组          |
+| `users_getadmins`| –          | 管理员 User 数组       |
 
-**User object fields:**
+**User 对象字段：**
 
-| Field      | Type    | Description                    |
+| 字段       | 类型    | 说明                        |
 |------------|---------|--------------------------------|
-| `userName` | string  | The user's unique username     |
-| `name`     | string  | The user's display name        |
-| `isAdmin`  | boolean | Whether the user is an admin   |
+| `userName` | string  | 用户的唯一用户名              |
+| `name`     | string  | 用户的显示名称                |
+| `isAdmin`  | boolean | 该用户是否为管理员            |
 
-> **Security:** Sensitive fields like passwords, email addresses, and internal IDs are never exposed to plugins.
+> **安全：** 密码、电子邮件地址和内部 ID 等敏感字段绝不会暴露给插件。
 
-**Usage:**
+**用法：**
 
 ```go
 users, err := host.UsersGetUsers()
@@ -980,9 +980,9 @@ admins, err := host.UsersGetAdmins()
 
 ### ScrobbleRetriever
 
-Retrieve the scrobble history of users the plugin has been granted access to. Each scrobble carries only the media file ID and the submission time; use the Matcher host service to resolve them to track metadata.
+获取插件被授权访问的用户的 scrobble 历史记录。每条 scrobble 只携带媒体文件 ID 和提交时间；请使用 Matcher 宿主服务将它们解析为曲目元数据。
 
-**Manifest permission:**
+**Manifest 权限：**
 
 ```json
 {
@@ -997,38 +997,38 @@ Retrieve the scrobble history of users the plugin has been granted access to. Ea
 }
 ```
 
-> **Important:** The `scrobbleRetriever` permission requires the `users` permission. Which users the plugin can act as is controlled through the Navidrome UI.
+> **重要：** `scrobbleRetriever` 权限需要 `users` 权限。插件能以哪些用户的身份执行操作由 Navidrome 界面控制。
 
-**Host functions:**
+**宿主函数：**
 
-| Function                              | Parameters            | Returns                          |
+| 函数                                  | 参数                | 返回值                          |
 |---------------------------------------|-----------------------|----------------------------------|
-| `scrobbleretriever_getfirsttimestamp` | `username`            | Unix timestamp of oldest scrobble, or null |
-| `scrobbleretriever_getlasttimestamp`  | `username`            | Unix timestamp of newest scrobble, or null |
-| `scrobbleretriever_getscrobbles`      | `username`, `options` | One page of scrobbles + options for the next page |
-| `scrobbleretriever_getscrobblecount`  | `username`, `options` | Number of scrobbles in the range |
+| `scrobbleretriever_getfirsttimestamp` | `username`            | 最早一条 scrobble 的 Unix 时间戳，或 null |
+| `scrobbleretriever_getlasttimestamp`  | `username`            | 最新一条 scrobble 的 Unix 时间戳，或 null |
+| `scrobbleretriever_getscrobbles`      | `username`, `options` | 一页 scrobble 及下一页的选项             |
+| `scrobbleretriever_getscrobblecount`  | `username`, `options` | 该范围内的 scrobble 数量                 |
 
-**ScrobbleOptions fields** (all optional):
+**ScrobbleOptions 字段**（均为可选）：
 
-| Field           | Type    | Description                                              |
+| 字段             | 类型    | 说明                                                  |
 |-----------------|---------|----------------------------------------------------------|
-| `fromTimestamp` | int64   | Start of the range (inclusive). Default: first scrobble  |
-| `toTimestamp`   | int64   | End of the range (inclusive). Default: last scrobble     |
-| `descending`    | boolean | Newest first. Default: oldest first                      |
-| `maxItems`      | int     | Page size, capped at 5000 (the default)                  |
-| `offset`        | int     | Managed by the host for pagination. Never set it manually |
+| `fromTimestamp` | int64   | 范围起点（含）。默认值：第一条 scrobble                  |
+| `toTimestamp`   | int64   | 范围终点（含）。默认值：最后一条 scrobble                |
+| `descending`    | boolean | 从最新开始。默认值：从最早开始                          |
+| `maxItems`      | int     | 每页大小，上限为 5000（默认值）                          |
+| `offset`        | int     | 由宿主管理用于分页。切勿手动设置                        |
 
-**ScrobbleRef fields:**
+**ScrobbleRef 字段：**
 
-| Field            | Type   | Description                                    |
+| 字段              | 类型   | 说明                                              |
 |------------------|--------|------------------------------------------------|
-| `id`             | int64  | Scrobble ID, unique even for duplicate submissions |
-| `mediaFileId`    | string | The media file that was scrobbled              |
-| `submissionTime` | int64  | Unix timestamp of the submission               |
+| `id`             | int64  | Scrobble ID，即使重复提交也保持唯一             |
+| `mediaFileId`    | string | 被 scrobble 的媒体文件                          |
+| `submissionTime` | int64  | 提交的 Unix 时间戳                              |
 
-**Usage:**
+**用法：**
 
-`GetScrobbles` returns one page plus the options to fetch the following page. Pass them back unchanged and repeat until they are nil:
+`GetScrobbles` 返回一页数据以及获取下一页所需的选项。将它们原样传回并重复，直到它们为 nil：
 
 ```go
 opts := host.ScrobbleOptions{MaxItems: 500}
@@ -1052,15 +1052,15 @@ count, err := host.ScrobbleRetrieverGetScrobbleCount("username", host.ScrobbleCo
 })
 ```
 
-> **Note:** The returned `next` options carry an adjusted `fromTimestamp`/`toTimestamp`, so keep a copy of your original options if you still need the range.
+> **注意：** 返回的 `next` 选项带有调整后的 `fromTimestamp`/`toTimestamp`，所以如果你仍需使用原来的范围，请保留一份原始选项的副本。
 
 ---
 
-## Configuration
+## 配置
 
-### Server Configuration
+### 服务器配置
 
-Enable plugins in `navidrome.toml`:
+在 `navidrome.toml` 中启用插件：
 
 ```toml
 [Plugins]
@@ -1071,11 +1071,11 @@ LogLevel = "debug"            # Plugin-specific log level
 CacheSize = "200MB"           # Compilation cache size limit
 ```
 
-### Plugin Configuration
+### 插件配置
 
-Plugin configuration is managed through the Navidrome web UI. Navigate to the Plugins page, select a plugin, and edit its configuration as key-value pairs.
+插件配置通过 Navidrome Web 界面管理。导航到“插件”页面，选择一个插件，并以键值对的形式编辑其配置。
 
-Access configuration values in your plugin:
+在插件中访问配置值：
 
 ```go
 apiKey, ok := pdk.GetConfig("api_key")
@@ -1085,45 +1085,45 @@ if !ok {
 }
 ```
 
-For more advanced access (listing keys, integer values), use the [Config](#config) host service.
+如需更高级的访问（列出键、整数值），请使用 [Config](#config) 宿主服务。
 
 ---
 
-## Command Line Interface
+## 命令行接口
 
-Manage plugins from the command line with `navidrome plugin`:
+使用 `navidrome plugin` 从命令行管理插件：
 
-| Command                                                | Description                                                |
+| 命令                                                    | 说明                                                        |
 |--------------------------------------------------------|------------------------------------------------------------|
-| `navidrome plugin list [-f table\|csv\|json]`          | List installed plugins                                     |
-| `navidrome plugin info <id\|file.ndp> [-f text\|json]` | Show details for an installed plugin or a `.ndp` package   |
-| `navidrome plugin validate <id\|file.ndp>`             | Validate an installed plugin or a `.ndp` package manifest  |
-| `navidrome plugin enable <id>`                         | Enable a plugin                                            |
-| `navidrome plugin disable <id>`                        | Disable a plugin                                           |
-| `navidrome plugin edit <id>`                           | Update a plugin's config and/or permissions                |
-| `navidrome plugin rescan`                              | Re-discover plugins in the plugins folder                  |
+| `navidrome plugin list [-f table|csv|json]`          | 列出已安装的插件                                            |
+| `navidrome plugin info <id|file.ndp> [-f text|json]` | 显示已安装插件或 `.ndp` 包的详细信息                        |
+| `navidrome plugin validate <id|file.ndp>`             | 校验已安装插件或 `.ndp` 包的 manifest                        |
+| `navidrome plugin enable <id>`                         | 启用插件                                                    |
+| `navidrome plugin disable <id>`                        | 禁用插件                                                    |
+| `navidrome plugin edit <id>`                           | 更新插件的配置和/或权限                                     |
+| `navidrome plugin rescan`                              | 重新发现插件目录中的插件                                    |
 
-**`plugin edit` flags:**
+**`plugin edit` 标志：**
 
-- `--config <json>` / `--config-file <path>` – Set the plugin configuration (`-` reads from stdin)
-- `--users <list>` / `--all-users` – Usernames the plugin may access (comma-separated or JSON array), or all users
-- `--libraries <list>` / `--all-libraries` – Library IDs the plugin may access (comma-separated or JSON array), or all libraries
-- `--write-access` / `--no-write-access` – Allow or deny the plugin write access to libraries
+- `--config <json>` / `--config-file <path>` – 设置插件配置（`-` 从 stdin 读取）
+- `--users <list>` / `--all-users` – 插件可访问的用户名（逗号分隔或 JSON 数组），或所有用户
+- `--libraries <list>` / `--all-libraries` – 插件可访问的媒体库 ID（逗号分隔或 JSON 数组），或所有媒体库
+- `--write-access` / `--no-write-access` – 允许或拒绝插件对媒体库的写访问
 
 ---
 
-## Building Plugins
+## 构建插件
 
-### Supported Languages
+### 支持的语言
 
-Plugins can be written in any language that Extism supports. We recommend:
+插件可以用 Extism 支持的任何语言编写。我们推荐：
 
-- **Go** – Best overall experience with [TinyGo](https://tinygo.org/) and the [Go PDK](https://github.com/extism/go-pdk). Familiar syntax, excellent stdlib support.
-- **Rust** – Best for performance-critical plugins. Smallest binaries, excellent type safety. Uses the [Rust PDK](https://github.com/extism/rust-pdk).
-- **Python** – Best for rapid prototyping. Experimental support via [extism-py](https://github.com/extism/python-pdk). Note some limitations compared to compiled languages.
-- **TypeScript** – Experimental support via [extism-js](https://github.com/extism/js-pdk).
+- **Go** – 配合 [TinyGo](https://tinygo.org/) 和 [Go PDK](https://github.com/extism/go-pdk) 获得最佳整体体验。语法熟悉，标准库支持出色。
+- **Rust** – 最适合性能关键的插件。二进制最小，类型安全出色。使用 [Rust PDK](https://github.com/extism/rust-pdk)。
+- **Python** – 最适合快速原型开发。通过 [extism-py](https://github.com/extism/python-pdk) 提供实验性支持。请注意，与编译型语言相比存在一些限制。
+- **TypeScript** – 通过 [extism-js](https://github.com/extism/js-pdk) 提供实验性支持。
 
-### Go with TinyGo (Recommended)
+### 使用 TinyGo 的 Go（推荐）
 
 ```bash
 # Install TinyGo: https://tinygo.org/getting-started/install/
@@ -1135,9 +1135,9 @@ tinygo build -o plugin.wasm -target wasip1 -buildmode=c-shared .
 zip -j my-plugin.ndp manifest.json plugin.wasm
 ```
 
-#### Using Go PDK Packages
+#### 使用 Go PDK 包
 
-Navidrome provides type-safe Go packages for each capability and host service in `plugins/pdk/go/`. Instead of manually exporting functions with `//go:wasmexport`, use the `Register()` pattern:
+Navidrome 在 `plugins/pdk/go/` 中为每种能力和宿主服务提供了类型安全的 Go 包。无需使用 `//go:wasmexport` 手动导出函数，改用 `Register()` 模式：
 
 ```go
 package main
@@ -1154,30 +1154,30 @@ func init() { metadata.Register(&myPlugin{}) }
 func main() {}
 ```
 
-Add to your `go.mod`:
+添加到你的 `go.mod`：
 
 ```
 require github.com/navidrome/navidrome v0.0.0
 replace github.com/navidrome/navidrome => ../../..
 ```
 
-**Available capability packages:**
+**可用的能力包：**
 
-| Package           | Import Path                          | Description                          |
+| 包                 | 导入路径                          | 说明                                  |
 |-------------------|--------------------------------------|--------------------------------------|
-| `metadata`        | `plugins/pdk/go/metadata`            | Artist/album metadata providers      |
-| `scrobbler`       | `plugins/pdk/go/scrobbler`           | Scrobbling services                  |
-| `lyrics`          | `plugins/pdk/go/lyrics`              | Lyrics providers                     |
-| `sonicsimilarity` | `plugins/pdk/go/sonicsimilarity`     | Audio similarity discovery           |
-| `taskworker`      | `plugins/pdk/go/taskworker`          | Background task processing           |
-| `lifecycle`       | `plugins/pdk/go/lifecycle`           | Plugin initialization                |
-| `scheduler`       | `plugins/pdk/go/scheduler`           | Scheduled task callbacks             |
-| `websocket`       | `plugins/pdk/go/websocket`           | WebSocket event handlers             |
-| `host`            | `plugins/pdk/go/host`                | Host service SDK (all services)      |
-| `types`           | `plugins/pdk/go/types`               | Shared data types (tracks, artists, song refs) |
-| `pdk`             | `plugins/pdk/go/pdk`                 | Low-level helpers (wraps extism/go-pdk: config, logging, memory) |
+| `metadata`        | `plugins/pdk/go/metadata`            | 艺人/专辑元数据提供方                 |
+| `scrobbler`       | `plugins/pdk/go/scrobbler`           | Scrobbling 服务                       |
+| `lyrics`          | `plugins/pdk/go/lyrics`              | 歌词提供方                            |
+| `sonicsimilarity` | `plugins/pdk/go/sonicsimilarity`     | 音频相似度发现                        |
+| `taskworker`      | `plugins/pdk/go/taskworker`          | 后台任务处理                          |
+| `lifecycle`       | `plugins/pdk/go/lifecycle`           | 插件初始化                            |
+| `scheduler`       | `plugins/pdk/go/scheduler`           | 计划任务回调                          |
+| `websocket`       | `plugins/pdk/go/websocket`           | WebSocket 事件处理器                  |
+| `host`            | `plugins/pdk/go/host`                | 宿主服务 SDK（所有服务）              |
+| `types`           | `plugins/pdk/go/types`               | 共享数据类型（曲目、艺人、歌曲引用）  |
+| `pdk`             | `plugins/pdk/go/pdk`                 | 底层辅助工具（封装 extism/go-pdk：配置、日志、内存） |
 
-See the example plugins in [examples/](examples/) for complete usage patterns.
+完整的使用模式请参见 [examples/](examples/) 中的示例插件。
 
 ### Rust
 
@@ -1189,7 +1189,7 @@ cargo build --release --target wasm32-wasip1
 zip -j my-plugin.ndp manifest.json target/wasm32-wasip1/release/plugin.wasm
 ```
 
-#### Using Rust PDK
+#### 使用 Rust PDK
 
 ```toml
 # Cargo.toml
@@ -1200,7 +1200,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 ```
 
-**Implementing capabilities with traits and macros:**
+**使用 trait 和宏实现能力：**
 
 ```rust
 use nd_pdk::scrobbler::{Scrobbler, IsAuthorizedRequest, Error};
@@ -1220,7 +1220,7 @@ impl Scrobbler for MyPlugin {
 register_scrobbler!(MyPlugin);  // Generates all WASM exports
 ```
 
-**Using host services:**
+**使用宿主服务：**
 
 ```rust
 use nd_pdk::host::{cache, scheduler, library};
@@ -1230,9 +1230,9 @@ scheduler::schedule_recurring("@every 5m", "payload", "task_id")?;
 let libs = library::get_all_libraries()?;
 ```
 
-See [pdk/rust/README.md](pdk/rust/README.md) for detailed documentation.
+详细文档请参见 [pdk/rust/README.md](pdk/rust/README.md)。
 
-### Python (with extism-py)
+### Python（使用 extism-py）
 
 ```bash
 # Build WebAssembly module (requires extism-py installed)
@@ -1242,9 +1242,9 @@ extism-py plugin.wasm -o plugin.wasm *.py
 zip -j my-plugin.ndp manifest.json plugin.wasm
 ```
 
-### Using XTP CLI (Scaffolding)
+### 使用 XTP CLI（脚手架）
 
-Bootstrap a new plugin from a schema:
+根据 schema 引导创建新插件：
 
 ```bash
 # Install XTP CLI: https://docs.xtp.dylibso.com/docs/cli
@@ -1261,55 +1261,55 @@ cd my-agent && xtp plugin build
 zip -j my-agent.ndp manifest.json dist/plugin.wasm
 ```
 
-See [capabilities/README.md](capabilities/README.md) for available schemas and scaffolding examples.
+可用的 schema 和脚手架示例请参见 [capabilities/README.md](capabilities/README.md)。
 
 ---
 
-## Examples
+## 示例
 
-See [examples/](examples/) for complete working plugins:
+完整可用的插件请参见 [examples/](examples/)：
 
-| Plugin                                                         | Language       | Capabilities  | Host Services                              | Description                    |
-|----------------------------------------------------------------|----------------|---------------|--------------------------------------------|--------------------------------|
-| [minimal](examples/minimal/)                                   | Go             | MetadataAgent | –                                          | Basic structure example        |
-| [wikimedia](examples/wikimedia/)                               | Go             | MetadataAgent | HTTP                                       | Wikidata/Wikipedia integration |
-| [coverartarchive-py](examples/coverartarchive-py/)             | Python         | MetadataAgent | HTTP                                       | Cover Art Archive              |
-| [webhook-rs](examples/webhook-rs/)                             | Rust           | Scrobbler                                        | HTTP                                               | HTTP webhooks                  |
-| [nowplaying-py](examples/nowplaying-py/)                       | Python         | Lifecycle, SchedulerCallback                     | Scheduler, SubsonicAPI                             | Periodic now-playing logger    |
-| [library-inspector-rs](examples/library-inspector-rs/)         | Rust           | Lifecycle, SchedulerCallback                     | Library, Scheduler                                 | Periodic library stats logging |
-| [crypto-ticker](examples/crypto-ticker/)                       | Go             | Lifecycle, SchedulerCallback, WebSocketCallback  | WebSocket, Scheduler                               | Real-time crypto prices demo   |
-| [discord-rich-presence-rs](examples/discord-rich-presence-rs/) | Rust           | Scrobbler, SchedulerCallback, WebSocketCallback  | HTTP, WebSocket, Cache, Scheduler, Artwork, Config | Discord integration            |
-
----
-
-## Security
-
-Plugins run in a secure WebAssembly sandbox provided by [Extism](https://extism.org/) and the [Wazero](https://wazero.io/) runtime:
-
-1. **Host Allowlisting** – Only explicitly allowed hosts are accessible via HTTP/WebSocket
-2. **Limited File System** – Plugins cannot create symlinks inside a mount and `..` or absolute paths are rejected, though symlinks already present are followed. Library access requires the `library.filesystem` permission and is read-only unless an administrator grants write access; the `storage` permission grants a read-write directory private to the plugin
-3. **No Network Listeners** – Plugins cannot bind ports
-4. **Config Isolation** – Plugins only receive their own config section
-5. **Memory Limits** – Controlled by the WebAssembly runtime
-6. **User-Scoped Authorization** – Plugins with `subsonicapi`, `scrobbleRetriever`, or `scrobbler` capabilities can only access/receive events for users assigned to them through Navidrome's configuration
-7. **Users Permission** – Plugins requesting user access must be explicitly configured with allowed users; sensitive data (passwords, emails) is never exposed
+| 插件                                                             | 语言       | 能力                                      | 宿主服务                                          | 说明                        |
+|----------------------------------------------------------------|----------------|-----------------------------------------------|--------------------------------------------|--------------------------------|
+| [minimal](examples/minimal/)                                   | Go             | MetadataAgent | –                                          | 基本结构示例                 |
+| [wikimedia](examples/wikimedia/)                               | Go             | MetadataAgent | HTTP                                       | Wikidata/Wikipedia 集成      |
+| [coverartarchive-py](examples/coverartarchive-py/)             | Python         | MetadataAgent | HTTP                                       | Cover Art Archive            |
+| [webhook-rs](examples/webhook-rs/)                             | Rust           | Scrobbler                                        | HTTP                                               | HTTP webhook                |
+| [nowplaying-py](examples/nowplaying-py/)                       | Python         | Lifecycle, SchedulerCallback                     | Scheduler, SubsonicAPI                             | 周期性正在播放记录器        |
+| [library-inspector-rs](examples/library-inspector-rs/)         | Rust           | Lifecycle, SchedulerCallback                     | Library, Scheduler                                 | 周期性媒体库统计日志        |
+| [crypto-ticker](examples/crypto-ticker/)                       | Go             | Lifecycle, SchedulerCallback, WebSocketCallback  | WebSocket, Scheduler                               | 实时加密货币价格演示        |
+| [discord-rich-presence-rs](examples/discord-rich-presence-rs/) | Rust           | Scrobbler, SchedulerCallback, WebSocketCallback  | HTTP, WebSocket, Cache, Scheduler, Artwork, Config | Discord 集成                |
 
 ---
 
-## Runtime Management
+## 安全性
 
-### Auto-Reload
+插件在由 [Extism](https://extism.org/) 和 [Wazero](https://wazero.io/) 运行时提供的安全 WebAssembly 沙箱中运行：
 
-With `AutoReload = true`, Navidrome watches the plugins folder and automatically detects when `.ndp` files are added, modified, or removed. When a plugin file changes, the plugin is disabled and its metadata is re-read from the archive.
+1. **主机白名单** – 仅显式允许的主机可通过 HTTP/WebSocket 访问
+2. **受限的文件系统** – 插件不能在挂载点内创建符号链接，`..` 或绝对路径会被拒绝，但已存在的符号链接仍会被跟随。媒体库访问需要 `library.filesystem` 权限，且默认为只读，除非管理员授予写权限；`storage` 权限授予一个插件私有的读写目录
+3. **禁止网络监听** – 插件不能绑定端口
+4. **配置隔离** – 插件只会收到自己的配置段
+5. **内存限制** – 由 WebAssembly 运行时控制
+6. **用户作用域授权** – 具有 `subsonicapi`、`scrobbleRetriever` 或 `scrobbler` 能力的插件，只能访问/接收通过 Navidrome 配置分配给它们的用户的事件
+7. **Users 权限** – 请求用户访问的插件必须显式配置允许的用户；敏感数据（密码、电子邮件）绝不会暴露
 
-If `AutoReload` is disabled, Navidrome needs to be restarted to pick up plugin changes.
+---
 
-### Enabling/Disabling Plugins
+## 运行时管理
 
-Plugins can be enabled/disabled via the Navidrome UI or the [`navidrome plugin` CLI](#command-line-interface). The plugin state is persisted in the database.
+### 自动重载
 
-### Important Notes
+当 `AutoReload = true` 时，Navidrome 会监视插件目录，并自动检测 `.ndp` 文件的新增、修改或删除。当插件文件发生变化时，该插件会被禁用，并从压缩包中重新读取其元数据。
 
-- **In-flight requests** – When reloading, existing requests complete before the new version takes over
-- **Config changes** – Changes to the plugin configuration in the UI are applied immediately
-- **Cache persistence** – The in-memory cache is cleared when a plugin is unloaded
+如果 `AutoReload` 被禁用，则需要重启 Navidrome 才能生效插件变更。
+
+### 启用/禁用插件
+
+插件可以通过 Navidrome 界面或 [`navidrome plugin` CLI](#command-line-interface) 启用/禁用。插件状态持久化在数据库中。
+
+### 重要说明
+
+- **进行中的请求** – 重新加载时，现有请求会在新版本接管前完成
+- **配置变更** – 在界面中对插件配置的更改会立即生效
+- **缓存持久化** – 插件卸载时，内存缓存会被清空
