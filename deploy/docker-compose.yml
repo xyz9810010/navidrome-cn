@@ -6,7 +6,7 @@ services:
     container_name: navidrome-cn
     restart: unless-stopped
     ports:
-      - "4533:4533"                     # 访问地址 http://飞牛IP:4533
+      - "4535:4533"                     # 访问地址 http://飞牛IP:4535
     environment:
       - ND_SCANSCHEDULER=1h             # 每小时自动扫描一次音乐库
       - ND_LOGLEVEL=info
@@ -19,5 +19,5 @@ services:
       - ND_ENABLESHARING=true
     volumes:
       # 下面两行路径必须改成你在飞牛里的真实绝对路径
-      - /vol1/1000/docker/navidrome/data:/data    # 数据目录（数据库/缓存/封面等）
-      - /vol1/1000/music:/music:ro                 # 音乐目录（只读挂载）
+      - /vol1/@appdata/navidrome-cn-data:/data    # 数据目录（数据库/缓存/封面等）
+      - /vol1/1000/音乐:/music:ro                    # 音乐目录（只读挂载，按你的实际路径改）
