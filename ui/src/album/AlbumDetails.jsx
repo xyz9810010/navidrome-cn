@@ -214,6 +214,7 @@ export const Details = (props) => {
 
 const AlbumDetails = (props) => {
   const record = useRecordContext(props)
+  const translate = useTranslate()
   const isXsmall = useMediaQuery((theme) => theme.breakpoints.down('xs'))
   const isDesktop = useMediaQuery((theme) => theme.breakpoints.up('lg'))
   const classes = useStyles()
