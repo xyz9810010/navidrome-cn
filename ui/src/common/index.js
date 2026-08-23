@@ -1,3 +1,4 @@
+export * from './AddAllToPlaylistButton'
 export * from './AddToPlaylistButton'
 export * from './artist'
 export * from './ArtistLinkField'

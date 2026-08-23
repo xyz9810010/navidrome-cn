@@ -46,6 +46,7 @@
         "addToQueue": "添加到播放队列",
         "playNow": "立即播放",
         "addToPlaylist": "添加到歌单",
+        "addAllToPlaylist": "全部添加到歌单",
         "showInPlaylist": "在歌单中显示",
         "shuffleAll": "全部随机播放",
         "download": "下载",
